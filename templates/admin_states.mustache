@@ -1,0 +1,57 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/admin_states
+
+    State codes of "state" columns in the plugin settings: one row per state, with Add and Remove.
+
+    Context variables required for this template:
+    * name - form field name
+    * id - element id
+    * rows - [{code, color, aliases, label, preview, textcolor}]
+    * empty - the same fields for a new row
+
+    Example context (json):
+    {
+        "name": "s_local_reportium_states", "id": "id_s_local_reportium_states",
+        "rows": [{"code": "completed", "color": "#73a839", "aliases": "done, completado", "label": "",
+            "preview": "Completed", "textcolor": "#ffffff"}],
+        "empty": {"code": "", "color": "#6c757d", "aliases": "", "label": "", "preview": "", "textcolor": "#ffffff"}
+    }
+}}
+<div class="reportium-admin-states" id="{{id}}" data-region="admin-states">
+    <input type="hidden" name="{{name}}[present]" value="1">
+    <table class="table table-sm reportium-admin-states-table">
+        <thead>
+            <tr>
+                <th scope="col">{{#str}} settings_states_code, local_reportium {{/str}}</th>
+                <th scope="col">{{#str}} settings_states_color, local_reportium {{/str}}</th>
+                <th scope="col">{{#str}} settings_states_aliases, local_reportium {{/str}}</th>
+                <th scope="col">{{#str}} settings_states_label, local_reportium {{/str}}</th>
+                <th scope="col">{{#str}} settings_states_preview, local_reportium {{/str}}</th>
+                <th scope="col"><span class="sr-only visually-hidden">{{#str}} delete {{/str}}</span></th>
+            </tr>
+        </thead>
+        <tbody data-region="rows">
+            {{#rows}}{{> local_reportium/admin_states_row }}{{/rows}}
+        </tbody>
+    </table>
+    <template data-region="row-template">{{#empty}}{{> local_reportium/admin_states_row }}{{/empty}}</template>
+    <button type="button" class="btn btn-secondary btn-sm" data-action="add-state">
+        <i class="fa fa-plus" aria-hidden="true"></i> {{#str}} settings_states_add, local_reportium {{/str}}
+    </button>
+</div>

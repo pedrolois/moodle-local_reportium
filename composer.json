@@ -1,0 +1,13 @@
+{
+  "name": "reportium/moodle-local_reportium",
+  "type": "moodle-local",
+  "description": "Reportium - Interactive Reports for Moodle: SQL reports with drill-down levels, charts, KPI cards, filters, downloads, scheduled emails and alerts.",
+  "license": "GPL-3.0-or-later",
+  "require": {
+    "composer/installers": "*",
+    "ext-json": "*"
+  },
+  "extra": {
+    "installer-name": "reportium"
+  }
+}

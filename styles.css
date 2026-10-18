@@ -1,0 +1,1755 @@
+/* Reports manager: "Add report" button. */
+.addbutton {
+    text-align: center;
+}
+
+.reportium-ui-view-freshness {
+    position: absolute;
+    right: 0;
+    display: flex;
+    align-items: center;
+}
+
+.reportium-ui-toolbar-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.reportium-ui-toolbar-pill-status {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(11, 110, 253, 0.06);
+    border: 1px solid rgba(11, 110, 253, 0.16);
+    color: #0b3558;
+    line-height: 1.1;
+    position: relative;
+}
+
+.reportium-ui-toolbar-pill-status-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.reportium-ui-help-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    margin-left: 0.35rem;
+    border: 0;
+    border-radius: 999px;
+    background: #0b6efd;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.reportium-ui-help-trigger:hover {
+    background: #0957ca;
+}
+
+.reportium-ui-help-popover {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 30;
+    width: min(320px, 85vw);
+    padding: 0.95rem 1rem;
+    border: 1px solid rgba(11, 110, 253, 0.16);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 18px 40px rgba(11, 53, 88, 0.16);
+    color: #0b3558;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: normal;
+    opacity: 1;
+}
+
+.reportium-ui-help-popover strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+@media (min-width: 1280px) {
+    .reportium-ui-compare-layout.has-compare {
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-main,
+    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart,
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
+        width: 100% !important;
+    }
+
+    .reportium-ui-chart {
+        width: 100% !important;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart {
+        max-width: 100% !important;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    .reportium-ui-chart--compare {
+        height: 360px !important;
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .reportium-ui-compare-layout.has-compare {
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-main,
+    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart,
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
+        width: 100% !important;
+    }
+
+    .reportium-ui-chart {
+        width: 100% !important;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart {
+        max-width: 100% !important;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    .reportium-ui-chart--compare {
+        height: 320px !important;
+    }
+}
+
+@media (max-width: 1023px) {
+    .reportium-ui-chart-toolbar {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+    }
+
+    .reportium-ui-chart-toolbar .reportium-ui-breadcrumbs,
+    .reportium-ui-chart-toolbar .reportium-ui-toolbar-search,
+    .reportium-ui-chart-toolbar .reportium-ui-toolbar-meta {
+        justify-self: stretch;
+    }
+
+    .reportium-ui-toolbar-meta,
+    .reportium-ui-toolbar-actions,
+    .reportium-ui-toolbar-statuses {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .reportium-ui-toolbar-pill-status-title,
+    .reportium-ui-toolbar-pill-status-value {
+        text-align: left;
+    }
+}
+@keyframes cr-chat-pulse {
+    0%,100% { box-shadow: 0 4px 20px rgba(11,110,253,0.45); }
+    50%      { box-shadow: 0 4px 30px rgba(11,110,253,0.70); }
+}
+
+.reportium-ui-chat-bubble {
+    max-width: 88%;
+    padding: 0.6rem 0.9rem;
+    border-radius: 16px;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    word-break: break-word;
+}
+.reportium-ui-chat-bubble--ai {
+    background: #f0f4f8;
+    color: #1a2e3f;
+    border-radius: 4px 16px 16px 16px;
+    align-self: flex-start;
+}
+.reportium-ui-chat-bubble--ai pre {
+    background: #1e2a38;
+    color: #e2e8f0;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    margin: 0.4rem 0;
+}
+.reportium-ui-chat-bubble--ai code {
+    background: rgba(11,110,253,0.1);
+    color: #0b3558;
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-size: 0.82em;
+}
+.reportium-ui-chat-bubble--ai pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+}
+.reportium-ui-chat-bubble--user {
+    background: linear-gradient(135deg, #0b6efd 0%, #0050cc 100%);
+    color: #fff;
+    border-radius: 16px 4px 16px 16px;
+    align-self: flex-end;
+}
+
+.reportium-ui-chat-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0.75rem 1rem;
+    min-width: 60px;
+}
+.reportium-ui-chat-typing span {
+    width: 7px;
+    height: 7px;
+    background: #8fa3b1;
+    border-radius: 50%;
+    animation: cr-chat-dot 1.2s infinite ease-in-out;
+}
+.reportium-ui-chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+.reportium-ui-chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes cr-chat-dot {
+    0%,80%,100% { transform: scale(0.6); opacity: 0.5; }
+    40%          { transform: scale(1);   opacity: 1;   }
+}
+
+@media (max-width: 480px) {
+    .reportium-ui-chat-panel {
+        width: 100vw;
+        border-radius: 0;
+    }
+    .reportium-ui-chat-header {
+        border-radius: 0;
+    }
+    .reportium-ui-chat-fab {
+        bottom: 1rem;
+        right: 1rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .reportium-ui-chart-wrapper:not(.reportium-ui-chart-wrapper--table) .reportium-ui-compare-layout.has-compare .reportium-ui-compare-main > .reportium-ui-chart,
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
+        height: 360px !important;
+    }
+
+    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
+        margin-bottom: 0;
+    }
+}
+
+/* Interactive view of the levels. */
+.reportium-app,
+#printablediv {
+    --rp-primary: var(--primary, var(--bs-primary, #0f6cbf));
+}
+.reportium-app {
+    border: 1px solid color-mix(in srgb, var(--rp-primary) 12%, transparent);
+    border-radius: 16px;
+    padding: 1rem 1.25rem 1.25rem;
+    background: #fff;
+    position: relative;
+}
+#printablediv > .reportium-app {
+    margin-bottom: 1rem;
+}
+.reportium-app.is-loading .reportium-body {
+    opacity: 0.45;
+    pointer-events: none;
+}
+.reportium-report-title {
+    margin: 0.5rem 0 0.25rem;
+}
+.reportium-summary {
+    margin-bottom: 0.75rem;
+}
+.reportium-freshness {
+    margin-left: auto;
+}
+.reportium-app .reportium-ui-toolbar-pill-status {
+    background: color-mix(in srgb, var(--rp-primary) 6%, transparent);
+    border-color: color-mix(in srgb, var(--rp-primary) 16%, transparent);
+    color: inherit;
+}
+.reportium-app .reportium-ui-help-trigger {
+    background: var(--rp-primary);
+}
+.reportium-app .reportium-ui-help-trigger:hover {
+    filter: brightness(0.9);
+}
+.reportium-app .reportium-ui-help-popover {
+    border-color: color-mix(in srgb, var(--rp-primary) 16%, transparent);
+    color: inherit;
+}
+.reportium-crumb-home {
+    padding: 0.2rem 0.6rem;
+}
+.reportium-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.25rem;
+}
+.reportium-crumb {
+    border: 1px solid color-mix(in srgb, var(--rp-primary) 20%, transparent);
+    background: color-mix(in srgb, var(--rp-primary) 6%, transparent);
+    color: inherit;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.85rem;
+}
+.reportium-crumb.is-current {
+    background: var(--rp-primary);
+    border-color: var(--rp-primary);
+    color: #fff;
+}
+.reportium-crumb-sep {
+    color: #8a94a6;
+}
+.reportium-title {
+    margin: 0.4rem 0 0.75rem;
+}
+.reportium-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.reportium-views {
+    display: inline-flex;
+    border: 1px solid color-mix(in srgb, var(--rp-primary) 20%, transparent);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.reportium-view-btn {
+    border: 0;
+    background: transparent;
+    padding: 0.3rem 0.9rem;
+    color: inherit;
+}
+.reportium-view-btn.is-active {
+    background: var(--rp-primary);
+    color: #fff;
+}
+.reportium-search {
+    max-width: 260px;
+}
+.reportium-filter-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+.reportium-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 170px;
+    font-size: 0.85rem;
+    border: 0;
+    margin: 0;
+}
+.reportium-filter legend {
+    font-size: 0.85rem;
+    margin: 0;
+}
+.reportium-settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    align-items: flex-end;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+    background: #f7f9fc;
+}
+.reportium-settings label,
+.reportium-settings fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.85rem;
+    margin: 0;
+}
+.reportium-settings legend {
+    font-size: 0.85rem;
+    margin: 0;
+}
+.reportium-check {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 0.35rem !important;
+}
+.reportium-settings-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.reportium-chart {
+    width: 100%;
+    height: 420px;
+}
+.reportium-table tr.is-drillable {
+    cursor: pointer;
+}
+.reportium-table tr.is-drillable:hover,
+.reportium-table tr.is-drillable:focus {
+    background-color: #e8f4f8;
+    outline: none;
+}
+/* Progress bar in percentage cells (same look as the participants report progress bar). */
+.reportium-progress {
+    position: relative;
+    min-width: 90px;
+    height: 1.1rem;
+    border-radius: 0.2rem;
+    background-color: #e0e0e0;
+    overflow: hidden;
+}
+.reportium-progress-bar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--rp-primary, var(--primary, #0f6cbf));
+    background-repeat: no-repeat;
+}
+.reportium-progress span {
+    position: relative;
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1.1rem;
+    font-weight: 600;
+    color: #1d2125;
+    text-shadow: 0 0 2px #fff, 0 0 2px #fff;
+}
+/* State label ("state" column format); colours come from the state codes in instructions.json. */
+.reportium-state {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    background-color: #6c757d;
+    white-space: nowrap;
+}
+@media print {
+    .reportium-progress,
+    .reportium-progress-bar,
+    .reportium-state {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+.reportium-th-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: inherit;
+    white-space: nowrap;
+}
+.reportium-th-sort .fa {
+    opacity: 0.35;
+}
+.reportium-th-sort:hover .fa,
+.reportium-table th[aria-sort] .reportium-th-sort .fa {
+    opacity: 1;
+    color: var(--rp-primary);
+}
+@media print {
+    .reportium-th-sort .fa-sort {
+        display: none;
+    }
+}
+.reportium-compare {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    align-items: start;
+}
+@media (max-width: 991px) {
+    .reportium-compare {
+        grid-template-columns: 1fr;
+    }
+}
+.reportium-pane-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+}
+/* Compare: both columns stretch to the same height and the totals sit at the bottom, aligned. */
+.reportium-compare {
+    align-items: stretch !important;
+}
+.reportium-compare .reportium-pane {
+    display: flex;
+    flex-direction: column;
+}
+.reportium-pane-stats {
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+.reportium-pane-close {
+    padding: 0 0.35rem;
+    color: inherit;
+}
+.reportium-compare .reportium-chart {
+    height: 360px;
+}
+.reportium-compare-select {
+    max-width: 220px;
+}
+.reportium-sql-drawer {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    bottom: 0;
+    width: 315px;
+    z-index: 1040;
+    background: #f8f9fa;
+    border-left: 1px solid #dee2e6;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform 0.3s ease, visibility 0.3s;
+}
+.reportium-sql-drawer.is-open {
+    transform: translateX(0);
+    visibility: visible;
+}
+.reportium-sql-drawer-header {
+    display: flex;
+    /* Title on the left, close (x) on the right, in every side drawer (Filters, Chart settings, SQL). */
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.reportium-sql-close {
+    padding: 0.25rem 0.4rem;
+}
+.reportium-sql-drawer-body {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+/* AI assistant under the SQL editor. */
+.reportium-sqlchat {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.reportium-sqlchat-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--rp-primary, var(--primary, #0f6cbf));
+}
+.reportium-sqlchat-header div {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+.reportium-sqlchat-header small {
+    color: #6c757d;
+}
+.reportium-sqlchat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 340px;
+    overflow-y: auto;
+}
+.reportium-sqlchat-messages .reportium-ui-chat-bubble {
+    max-width: 100%;
+    font-size: 0.85rem;
+}
+.reportium-sqlchat-messages pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.reportium-sqlchat-use {
+    display: block;
+    margin: 4px 0 8px;
+}
+.reportium-sqlchat-input {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+}
+.reportium-sqlchat-input textarea {
+    font-size: 0.85rem;
+    resize: vertical;
+}
+.reportium-sql-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 12px;
+    align-items: center;
+}
+.reportium-sql-pill {
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+}
+.reportium-sql-pill.is-active {
+    border-color: var(--rp-primary);
+    background: var(--rp-primary);
+    color: #fff;
+}
+.reportium-sql-pill.is-new {
+    border-style: dashed;
+}
+.reportium-sql-pill-add {
+    border: 1px dashed var(--rp-primary);
+    color: var(--rp-primary);
+}
+.reportium-sql-heading {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+}
+.reportium-sql-badge {
+    font-size: 0.7rem;
+    font-weight: 400;
+    background: #198754;
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-left: 6px;
+}
+.reportium-sql-badge.is-unsaved {
+    background: #6c757d;
+}
+.reportium-sql-hint {
+    font-size: 0.72rem;
+    color: #6c757d;
+    margin-bottom: 8px;
+    cursor: help;
+}
+.reportium-sql-hint code {
+    background: #f0f0f0;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+}
+.reportium-sql-text {
+    width: 100%;
+    min-height: 240px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+.reportium-sql-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 10px;
+}
+.reportium-sql-status {
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    flex-basis: 100%;
+}
+.reportium-empty,
+.reportium-loading {
+    padding: 2rem;
+    text-align: center;
+    color: #5b6573;
+}
+
+/* Print report: report title + description, current level, charts, tables and totals only. */
+@media print {
+    body:has(#printablediv > .reportium-app) nav.navbar,
+    body:has(#printablediv > .reportium-app) #page-header,
+    body:has(#printablediv > .reportium-app) .secondary-navigation,
+    body:has(#printablediv > .reportium-app) .nav-tabs,
+    body:has(#printablediv > .reportium-app) .tabtree,
+    body:has(#printablediv > .reportium-app) .drawer,
+    body:has(#printablediv > .reportium-app) .drawer-toggles,
+    body:has(#printablediv > .reportium-app) #page-footer,
+    body:has(#printablediv > .reportium-app) .btn-footer-popover,
+    body:has(#printablediv > .reportium-app) #reportium-ui-chat-fab,
+    body:has(#printablediv > .reportium-app) #reportium-ui-chat-panel,
+    body:has(#printablediv > .reportium-app) .reportium-crumb-home,
+    body:has(#printablediv > .reportium-app) .reportium-crumb-home + .reportium-crumb-sep,
+    body:has(#printablediv > .reportium-app) .reportium-pane-close {
+        display: none !important;
+    }
+    .reportium-app {
+        border: 0;
+        padding: 0;
+    }
+    .reportium-crumb {
+        border: 0;
+        background: none !important;
+        color: inherit !important;
+        padding: 0;
+    }
+    .reportium-chart {
+        break-inside: avoid;
+    }
+    /* Keep the comparison side by side on paper (with both totals). The charts are re-drawn to the
+       column width by levels.js when the print layout applies, so they never overlap the tables. */
+    .reportium-compare {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+    .reportium-compare .reportium-chart {
+        height: 300px !important;
+    }
+    /* Safety net if the print width differs from the re-drawn size: scale the chart image down into its
+       box (the box keeps its height, so nothing moves over the table). */
+    .reportium-chart {
+        overflow: hidden;
+    }
+    .reportium-chart > div {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    .reportium-chart canvas {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: contain;
+    }
+    /* No trailing blank page. */
+    body:has(#printablediv > .reportium-app) #page,
+    body:has(#printablediv > .reportium-app) #page-wrapper,
+    body:has(#printablediv > .reportium-app) #topofscroll {
+        min-height: 0 !important;
+        height: auto !important;
+    }
+    .reportium-table tr {
+        break-inside: avoid;
+    }
+    /* Every column on paper: no horizontal scroll box (it would cut the columns that do not fit), the table
+       takes the width of its column, smaller text, and long values wrap instead of overflowing. */
+    .reportium-app .table-responsive {
+        overflow: visible !important;
+    }
+    .reportium-table {
+        width: 100% !important;
+        table-layout: auto;
+        font-size: 8pt;
+    }
+    .reportium-table th,
+    .reportium-table td {
+        padding: 2px 4px !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+}
+
+/* Report navigation for editors: Report, Settings, Access, Layout... and All reports on the right. */
+.reportium-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+}
+.reportium-nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.reportium-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--primary, #0f6cbf) 35%, #fff);
+    border-radius: 2rem;
+    color: var(--primary, #0f6cbf);
+    background: #fff;
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+.reportium-nav-link:hover,
+.reportium-nav-link:focus {
+    background: color-mix(in srgb, var(--primary, #0f6cbf) 10%, #fff);
+    text-decoration: none;
+}
+.reportium-nav-link.is-active {
+    background: var(--primary, #0f6cbf);
+    border-color: var(--primary, #0f6cbf);
+    color: #fff;
+}
+.reportium-nav-all {
+    margin-left: auto;
+}
+
+/* Side tabs on the right edge (Filters, Chart settings, SQL), stacked; they slide with the open drawer. */
+.reportium-side-tabs {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 1041;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: right 0.3s ease;
+}
+.reportium-side-tabs.is-open {
+    right: 315px;
+}
+.reportium-side-tabs .reportium-side-tab {
+    border-radius: 6px 0 0 6px;
+    padding: 10px 8px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    letter-spacing: 0.05em;
+    background-color: #fff;
+}
+.reportium-side-tabs .reportium-side-tab.btn-primary {
+    background-color: var(--rp-primary, var(--primary, #0f6cbf));
+}
+.reportium-side-tabs .reportium-side-tab .fa {
+    margin-bottom: 0.25rem;
+}
+/* Filters and Chart settings inside a drawer: one field per row. */
+.reportium-side-drawer .reportium-filter-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.reportium-side-drawer .reportium-filter-stack .reportium-filter {
+    width: 100%;
+    margin: 0;
+}
+.reportium-side-drawer .reportium-settings {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0;
+    background: none;
+}
+.reportium-side-drawer .reportium-settings label,
+.reportium-side-drawer .reportium-settings fieldset {
+    width: 100%;
+    min-width: 0;
+}
+.reportium-side-drawer .reportium-settings-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+/* Sortable headers of the Reports manager. */
+.reportium-list-table th.reportium-sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+.reportium-list-table th.reportium-sortable::after {
+    content: "\f0dc";
+    font-family: "Font Awesome 6 Free", "FontAwesome";
+    font-weight: 900;
+    margin-left: 0.35rem;
+    opacity: 0.3;
+}
+.reportium-list-table th.reportium-sort-asc::after {
+    content: "\f0de";
+    opacity: 1;
+}
+.reportium-list-table th.reportium-sort-desc::after {
+    content: "\f0dd";
+    opacity: 1;
+}
+.reportium-list-table th.reportium-sortable:focus-visible {
+    outline: 2px solid var(--primary, #0f6cbf);
+    outline-offset: -2px;
+}
+
+/* Column header: sort button + funnel filter. */
+.reportium-th {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    white-space: nowrap;
+}
+.reportium-th-filter {
+    padding: 0 0.15rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    opacity: 0.35;
+    line-height: 1;
+    font-size: 0.75rem;
+}
+.reportium-th-filter:hover,
+.reportium-th-filter:focus,
+.reportium-th-filter[aria-expanded="true"],
+.reportium-th-filter.is-active {
+    opacity: 1;
+    color: var(--rp-primary, var(--primary, #0f6cbf));
+}
+/* Funnel popover (positioned under the funnel, inside the report root). */
+.reportium-app {
+    position: relative;
+}
+.reportium-col-filter {
+    position: absolute;
+    z-index: 1030;
+    min-width: 230px;
+    max-width: 320px;
+    padding: 0.6rem 0.7rem;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.4rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.reportium-col-filter-title {
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.reportium-col-filter-title .fa {
+    color: var(--rp-primary, var(--primary, #0f6cbf));
+}
+.reportium-col-filter-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+@media print {
+    .reportium-th-filter,
+    .reportium-col-filter {
+        display: none !important;
+    }
+}
+
+/* Table pager. */
+.reportium-pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    margin: 0.5rem 0 0.75rem;
+}
+.reportium-pager-info {
+    margin: 0 0.5rem;
+    font-size: 0.875rem;
+    color: #495057;
+    white-space: nowrap;
+}
+/* Column formats: a compact row of small selects inside the chart settings. */
+.reportium-settings .reportium-formats {
+    flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 0;
+}
+.reportium-settings .reportium-formats legend {
+    width: 100%;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+.reportium-settings .reportium-formats label {
+    min-width: 12rem;
+}
+
+/* Reports manager: "Reportium default" / "Reportium custom" collapsible groups. */
+details.reportium-group > summary {
+    cursor: pointer;
+    list-style-position: inside;
+}
+details.reportium-group:not([open]) > summary {
+    border-bottom: 0;
+}
+
+/* Downloads and Print under the report, and in the Reports manager: small buttons with a coloured file icon. */
+.reportium-downloads {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    margin: 1.25rem 0 .5rem;
+}
+
+.reportium-downloads-label {
+    color: #6c757d;
+    font-size: .875rem;
+    margin-right: .25rem;
+}
+
+.reportium-downloads .reportium-download,
+.reportium-list-table .reportium-download {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    padding: .2rem .7rem;
+    font-weight: 500;
+}
+
+.reportium-list-table .reportium-download {
+    padding: .15rem .25rem;
+    margin: 0;
+    border: 0;
+    background: none;
+}
+
+.reportium-list-table .reportium-download .fa {
+    font-size: 1.15rem;
+}
+
+/* Actions and downloads of the Reports manager stay on one line. */
+.reportium-list-table td.c5,
+.reportium-list-table td.c6 {
+    white-space: nowrap;
+}
+
+.reportium-download .fa {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.reportium-download-csv .fa {
+    color: #198754;
+}
+
+.reportium-download-excel .fa {
+    color: #1d6f42;
+}
+
+.reportium-download-ods .fa {
+    color: #0d6efd;
+}
+
+.reportium-download-json .fa {
+    color: #b8860b;
+}
+
+.reportium-download-pdf .fa {
+    color: #dc3545;
+}
+
+.reportium-download-html .fa {
+    color: #e34c26;
+}
+
+.reportium-download:hover .fa,
+.reportium-download:focus .fa {
+    color: inherit;
+}
+
+/* Plugin settings: states table. */
+.reportium-admin-states-table input[type="color"],
+input[type="color"].reportium-admin-color {
+    width: 3rem;
+    min-width: 3rem;
+    height: calc(1.5em + .5rem + 2px);
+    padding: .1rem;
+}
+
+.reportium-admin-states-table td {
+    vertical-align: middle;
+}
+
+/* SQL Inspector without an AI provider: instructions to paste into an AI chat outside Moodle. */
+.reportium-aihelp-text {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.reportium-aihelp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Reports manager: search box above the groups. */
+.reportium-manager-search {
+    position: relative;
+    max-width: 480px;
+}
+
+.reportium-manager-search .fa-search {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+.reportium-manager-search input {
+    padding-left: 2.2rem;
+    border-radius: 999px;
+}
+
+/* Period of the data (toolbar): presets, custom dates, dates of the period, compare with the previous one. */
+.reportium-period {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+.reportium-period select,
+.reportium-period input[type="date"] {
+    width: auto;
+}
+.reportium-period-dates {
+    font-size: 0.8rem;
+    color: #6a737b;
+}
+.reportium-period-compare {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* History of the SQL of a level (SQL Inspector). */
+.reportium-sql-history {
+    margin-top: 0.6rem;
+    max-height: 22rem;
+    overflow: auto;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 0.5rem;
+}
+.reportium-history-item {
+    padding: 0.35rem 0;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+    font-size: 0.85rem;
+}
+.reportium-history-meta,
+.reportium-history-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+.reportium-history-buttons {
+    margin-top: 0.2rem;
+}
+.reportium-history-saved {
+    background: #0f6cbf;
+    color: #fff;
+}
+.reportium-history-deleted {
+    background: #ca3120;
+    color: #fff;
+}
+.reportium-history-restored {
+    background: #357a32;
+    color: #fff;
+}
+.reportium-history-diff {
+    margin: 0.35rem 0 0;
+    padding: 0.4rem;
+    background: #f8f9fa;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+}
+.reportium-diff-del {
+    background: #fde8e6;
+    color: #8a1f12;
+}
+.reportium-diff-add {
+    background: #e6f4e5;
+    color: #1d5a1b;
+}
+
+/* Delivery log of scheduled reports. */
+.reportium-sendlog {
+    white-space: nowrap;
+}
+
+/* Slow query pill (toolbar, next to "Live data"), in the colours of the warning. */
+/* Slow query and freshness pills stay together at the right end of the toolbar. */
+.reportium-toolbar-end {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+.reportium-toolbar-end .reportium-freshness {
+    position: relative;
+    margin-left: 0;
+}
+.reportium-slowpill {
+    position: relative;
+}
+.reportium-slowpill-button {
+    gap: 0.4rem;
+    border: 1px solid #f3d19e;
+    background: #fdf1e1;
+    color: #7a4a00;
+    cursor: pointer;
+}
+.reportium-slowpill-button:hover,
+.reportium-slowpill-button[aria-expanded="true"] {
+    background: #fbe3c2;
+}
+.reportium-app .reportium-slowpill-popover {
+    border-color: #f3d19e;
+    background: #fdf1e1;
+    color: #7a4a00;
+}
+.reportium-slowpill-popover ul {
+    padding-left: 1.1rem;
+}
+
+/* KPI cards above the chart. */
+.reportium-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.reportium-kpi {
+    padding: 0.75rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--rp-primary, #0f6cbf) 16%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--rp-primary, #0f6cbf) 4%, #fff);
+}
+.reportium-kpi-label {
+    font-size: 0.8rem;
+    color: #6a737b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.reportium-kpi-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.reportium-kpi-sub {
+    font-size: 0.75rem;
+    color: #6a737b;
+}
+.reportium-kpi-delta {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.reportium-kpi-delta.is-up {
+    color: #357a32;
+}
+.reportium-kpi-delta.is-down {
+    color: #ca3120;
+}
+
+/* Links to Moodle in report tables. */
+.reportium-table a.reportium-link {
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+}
+/* A blue hand on links, so they are told apart from the click on the row (which drills down). */
+.reportium-table a.reportium-link,
+.reportium-table td a[href] {
+    cursor: var(--rp-link-cursor, pointer);
+}
+.reportium-table a.reportium-link:hover,
+.reportium-table a.reportium-link:focus {
+    text-decoration: underline solid;
+}
+
+/* KPI settings (chart settings) and the totals row. */
+.reportium-kpi-settings select {
+    margin-top: 0.15rem;
+}
+.reportium-table tfoot td {
+    border-top: 2px solid #dee2e6;
+    background: color-mix(in srgb, var(--rp-primary, #0f6cbf) 4%, #fff);
+}
+
+/* Chart settings drawer: titled sections, compact "column -> choice" rows, buttons always at the bottom. */
+.reportium-settings-section {
+    border-bottom: 1px solid #e3e6e9;
+    padding: 0.35rem 0;
+}
+.reportium-settings-section > summary {
+    font-weight: 700;
+    color: var(--rp-primary, var(--primary, #0f6cbf));
+    cursor: pointer;
+    padding: 0.35rem 0;
+    list-style: none;
+}
+.reportium-settings-section > summary::-webkit-details-marker {
+    display: none;
+}
+.reportium-settings-section > summary::after {
+    content: "\f107";
+    font-family: "Font Awesome 6 Free", "FontAwesome";
+    font-weight: 900;
+    float: right;
+    transition: transform 0.15s;
+}
+.reportium-settings-section:not([open]) > summary::after {
+    transform: rotate(-90deg);
+}
+.reportium-settings-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.25rem 0 0.5rem;
+}
+.reportium-settings-section-body fieldset {
+    margin: 0;
+}
+.reportium-settings-section-body legend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.reportium-settings label.reportium-settings-row {
+    display: grid;
+    text-align: left;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.3rem;
+    font-size: 0.85rem;
+}
+.reportium-settings label.reportium-settings-row > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.reportium-settings-grid {
+    display: flex;
+    flex-direction: column;
+}
+.reportium-settings .reportium-settings-actions {
+    position: sticky;
+    bottom: 0;
+    padding: 0.6rem 0;
+    background: #fff;
+    border-top: 1px solid #e3e6e9;
+}
+
+/* Gear of a KPI card, the "+" card and the popover of a card. */
+.reportium-kpi {
+    position: relative;
+}
+.reportium-kpi-gear {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    padding: 0.1rem 0.25rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    opacity: 0.35;
+    line-height: 1;
+}
+.reportium-kpi:hover .reportium-kpi-gear,
+.reportium-kpi-gear:focus,
+.reportium-kpi-gear[aria-expanded="true"] {
+    opacity: 1;
+    color: var(--rp-primary, var(--primary, #0f6cbf));
+}
+.reportium-kpi-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 4.5rem;
+    border-style: dashed;
+    color: var(--rp-primary, var(--primary, #0f6cbf));
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+.reportium-kpi-popover-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+/* Titles of the side drawers (Filters, Chart settings, SQL Inspector): bold, in the main colour of the theme. */
+.reportium-app .reportium-sql-drawer-title {
+    font-weight: 700;
+    color: var(--rp-primary, var(--primary, #0f6cbf));
+}
+.reportium-settings-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.25rem;
+}
+
+/* Printing: no gears, no "+" card, no popovers of the cards. */
+@media print {
+    .reportium-kpi-gear,
+    .reportium-kpi-add,
+    .reportium-kpi-popover,
+    .reportium-col-filter {
+        display: none !important;
+    }
+}
+
+/* Calculated columns and column order. */
+.reportium-table th[draggable="true"] {
+    cursor: grab;
+}
+.reportium-table th[draggable="true"]:active {
+    cursor: grabbing;
+}
+/* The gap the lifted column leaves. */
+.reportium-table th.is-dragging,
+.reportium-table td.is-lifted {
+    opacity: 0.25;
+    background: repeating-linear-gradient(45deg, transparent, transparent 6px,
+        color-mix(in srgb, var(--rp-primary) 10%, transparent) 6px, color-mix(in srgb, var(--rp-primary) 10%, transparent) 12px);
+    transition: opacity 0.15s ease;
+}
+/* The column under the cursor: raised, tilted, with a shadow. */
+.reportium-drag-ghost {
+    --rp-primary: var(--primary, var(--bs-primary, #0f6cbf));
+    position: absolute;
+    top: -1000px;
+    left: -1000px;
+    background: #fff;
+    border: 2px solid var(--rp-primary);
+    border-radius: 0.5rem;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25), 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: rotate(-2deg) scale(1.04);
+    overflow: hidden;
+    pointer-events: none;
+}
+.reportium-drag-ghost th {
+    background: color-mix(in srgb, var(--rp-primary) 12%, #fff);
+    white-space: nowrap;
+}
+/* Where it will fall: a line that pulses. */
+.reportium-table th.is-drop-before {
+    box-shadow: inset 4px 0 0 var(--rp-primary);
+    animation: reportium-drop-pulse 0.8s ease-in-out infinite;
+}
+.reportium-table th.is-drop-after {
+    box-shadow: inset -4px 0 0 var(--rp-primary);
+    animation: reportium-drop-pulse 0.8s ease-in-out infinite;
+}
+@keyframes reportium-drop-pulse {
+    50% {
+        background: color-mix(in srgb, var(--rp-primary) 10%, transparent);
+    }
+}
+/* Landing in the new place. */
+.reportium-table .is-dropped {
+    animation: reportium-drop-land 0.6s ease-out;
+}
+@keyframes reportium-drop-land {
+    0% {
+        transform: translateY(-6px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        background: color-mix(in srgb, var(--rp-primary) 18%, #fff);
+    }
+    100% {
+        transform: none;
+        box-shadow: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .reportium-table .is-dropped,
+    .reportium-table th.is-drop-before,
+    .reportium-table th.is-drop-after {
+        animation: none;
+    }
+}.reportium-table th.is-calculated .reportium-th-sort {
+    font-style: italic;
+}
+.reportium-calc-popover {
+    width: 22rem;
+    max-width: calc(100vw - 2rem);
+}
+.reportium-calc-formula {
+    font-family: SFMono-Regular, Menlo, Consolas, monospace;
+}
+.reportium-calc-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+.reportium-calc-chip {
+    border: 1px solid var(--rp-primary);
+    border-radius: 1rem;
+    background: none;
+    color: var(--rp-primary);
+    font-size: 0.75rem;
+    padding: 0 0.5rem;
+}
+.reportium-calc-chip:hover,
+.reportium-calc-chip:focus {
+    background: var(--rp-primary);
+    color: #fff;
+}
+
+/* First setup assistant. */
+.reportium-setup {
+    --rp-primary: var(--primary, var(--bs-primary, #0f6cbf));
+    max-width: 52rem;
+    margin: 0 auto;
+}
+.reportium-setup-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+    counter-reset: none;
+}
+.reportium-setup-step {
+    flex: 1 1 0;
+    min-width: 6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: #6a737b;
+    text-align: center;
+    position: relative;
+}
+.reportium-setup-step a {
+    display: contents;
+    color: inherit;
+}
+.reportium-setup-number {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid #ced4da;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background: #fff;
+}
+.reportium-setup-step.is-current {
+    color: var(--rp-primary);
+    font-weight: bold;
+}
+.reportium-setup-step.is-current .reportium-setup-number {
+    border-color: var(--rp-primary);
+    background: var(--rp-primary);
+    color: #fff;
+}
+.reportium-setup-step.is-done .reportium-setup-number {
+    border-color: var(--rp-primary);
+    color: var(--rp-primary);
+}
+.reportium-setup-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    padding: 1.5rem 2rem;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.reportium-setup-card h3 {
+    color: var(--rp-primary);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+.reportium-setup-features li,
+.reportium-setup-checks li {
+    margin-bottom: 0.4rem;
+}
+.reportium-setup-checks {
+    list-style: none;
+    padding: 0;
+}
+.reportium-setup-check .fa {
+    width: 1.5rem;
+}
+.reportium-setup-report {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f3f5;
+}
+.reportium-setup-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+/* Settings: the first setup tour. */
+.reportium-tour-card {
+    --rp-primary: var(--primary, var(--bs-primary, #0f6cbf));
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    margin: 0.5rem 0 1rem;
+    border: 1px solid color-mix(in srgb, var(--rp-primary) 30%, transparent);
+    border-left: 4px solid var(--rp-primary);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--rp-primary) 6%, #fff);
+}
+.reportium-tour-icon {
+    font-size: 1.75rem;
+    color: var(--rp-primary);
+}
+.reportium-tour-text {
+    flex: 1;
+}
+.reportium-tour-text strong {
+    color: var(--rp-primary);
+}
+
+/* "+" strip on the right of a table: add a calculated column. */
+.reportium-table-wrap {
+    display: flex;
+    align-items: stretch;
+    gap: 0.25rem;
+}
+.reportium-table-wrap > .reportium-table {
+    flex: 1 1 auto;
+}
+.reportium-col-add {
+    flex: 0 0 2.5rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 0.6rem;
+    margin-bottom: 1rem;
+    border: 2px dashed #ced4da;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: #8f959e;
+    font-size: 1.25rem;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.reportium-col-add:hover,
+.reportium-col-add:focus,
+.reportium-col-add[aria-expanded="true"] {
+    border-color: var(--rp-primary);
+    color: var(--rp-primary);
+    background: color-mix(in srgb, var(--rp-primary) 8%, transparent);
+    outline: none;
+}
+.reportium-col-add:hover .fa,
+.reportium-col-add[aria-expanded="true"] .fa {
+    transform: scale(1.15);
+}
+.reportium-col-add .fa {
+    transition: transform 0.15s ease;
+}
+
+/* Placeholders of scheduled emails. */
+.reportium-placeholders {
+    columns: 2;
+    padding-left: 1rem;
+    margin: 0.25rem 0 0;
+}
+.reportium-placeholders code {
+    user-select: all;
+}
+
+/* Scheduled emails: level names in full. */
+.path-local-reportium #id_level {
+    width: auto;
+    max-width: 100%;
+}
+
+/* Site administration › Reports: a chart icon before the Reportium link (the link text is escaped by Moodle). */
+.tab-pane a[href*="/local/reportium/managereport.php"]::before,
+#region-main a[href$="/local/reportium/managereport.php?courseid=1"]::before {
+    font-family: "Font Awesome 6 Free", "FontAwesome";
+    font-weight: 900;
+    content: "\e0e3";
+    display: inline-block;
+    width: 1.25em;
+    margin-right: 0.2em;
+    color: var(--primary, var(--bs-primary, #0f6cbf));
+    text-decoration: none;
+}
+
+/* Settings: a Reportium Pro option (switched off, explained on hover). */
+.reportium-pro-setting {
+    cursor: help;
+    padding: 0.5rem 0.75rem 0.5rem 2rem;
+    border: 1px dashed #d6d8db;
+    border-radius: 0.5rem;
+    background: #fafbfc;
+}
+.reportium-pro-setting .form-check-label {
+    cursor: help;
+    color: #6a737b;
+}
+.reportium-ai-steps li {
+    margin-bottom: 0.3rem;
+}

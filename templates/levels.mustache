@@ -1,0 +1,47 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/levels
+
+    Shell of the interactive report (generic levels). The module local_reportium/levels fills every region.
+
+    Context variables required for this template:
+    * rootid - id of the root element
+    * config - JSON configuration read by the module (report id, states, formats, chat strings...)
+
+    Example context (json):
+    {
+        "rootid": "reportium-app-1",
+        "config": "{\"reportid\": 1, \"courseid\": 1}"
+    }
+}}
+<div id="{{rootid}}" class="reportium-app is-loading" data-region="reportium-app" data-config="{{config}}">
+    <div class="reportium-header">
+        <nav class="reportium-breadcrumbs" data-region="breadcrumbs" aria-label="{{#str}}breadcrumb, access{{/str}}"></nav>
+        <h3 class="reportium-title" data-region="title"></h3>
+    </div>
+    {{! Controls are not printed: Print report shows title, level, charts, tables and totals only. }}
+    <div class="reportium-toolbar d-print-none" data-region="toolbar"></div>
+    <div class="d-print-none" data-region="filters"></div>
+    <div class="d-print-none" data-region="settings"></div>
+    <div class="d-print-none" data-region="sql"></div>
+    {{! Side tabs on the right edge: Filters, Chart settings, SQL. }}
+    <div class="d-print-none" data-region="sidetabs"></div>
+    <div class="reportium-body" data-region="body">
+        <div class="reportium-loading">{{#pix}}i/loading, core{{/pix}}</div>
+    </div>
+</div>
