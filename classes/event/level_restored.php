@@ -24,7 +24,6 @@ namespace local_reportium\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class level_restored extends level_saved {
-
     /** @var string Verb of the description. */
     protected const VERB = 'restored an earlier SQL of';
 

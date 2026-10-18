@@ -33,15 +33,19 @@ require_once($CFG->libdir . '/formslib.php');
  * @package    local_reportium
  */
 class import_form extends moodleform {
-
     /**
      * Form definition.
      */
     public function definition(): void {
         $mform = $this->_form;
 
-        $mform->addElement('filepicker', 'userfile', get_string('file'), null,
-            ['accepted_types' => ['.json', '.xml', '.csv']]);
+        $mform->addElement(
+            'filepicker',
+            'userfile',
+            get_string('file'),
+            null,
+            ['accepted_types' => ['.json', '.xml', '.csv']]
+        );
         $mform->addHelpButton('userfile', 'importfile', 'local_reportium');
         $mform->addRule('userfile', null, 'required');
 

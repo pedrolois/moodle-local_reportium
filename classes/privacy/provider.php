@@ -35,11 +35,10 @@ use core_privacy\local\request\writer;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements
-        \core_privacy\local\metadata\provider,
-        \core_privacy\local\request\core_userlist_provider,
-        \core_privacy\local\request\plugin\provider,
-        \core_privacy\local\request\user_preference_provider {
-
+    \core_privacy\local\metadata\provider,
+    \core_privacy\local\request\core_userlist_provider,
+    \core_privacy\local\request\plugin\provider,
+    \core_privacy\local\request\user_preference_provider {
     /**
      * What Reportium stores about users, and where data goes.
      *
@@ -180,9 +179,11 @@ class provider implements
             ];
         }
         if ($reports || $levels || $roles || $versions || $schedules) {
-            writer::with_context($context)->export_data([get_string('pluginname', 'local_reportium')],
+            writer::with_context($context)->export_data(
+                [get_string('pluginname', 'local_reportium')],
                 (object) ['reports' => $reports, 'levels' => $levels, 'roles' => $roles, 'versions' => $versions,
-                    'schedules' => $schedules]);
+                'schedules' => $schedules]
+            );
         }
     }
 
@@ -279,11 +280,18 @@ class provider implements
     public static function export_user_preferences(int $userid) {
         global $DB;
         $prefix = \local_reportium\local\exporter::ORDER_PREFERENCE;
-        $records = $DB->get_records_select('user_preferences', 'userid = ? AND ' . $DB->sql_like('name', '?'),
-            [$userid, $DB->sql_like_escape($prefix) . '%']);
+        $records = $DB->get_records_select(
+            'user_preferences',
+            'userid = ? AND ' . $DB->sql_like('name', '?'),
+            [$userid, $DB->sql_like_escape($prefix) . '%']
+        );
         foreach ($records as $record) {
-            writer::export_user_preference('local_reportium', $record->name, $record->value,
-                get_string('privacy:metadata:preference:columns', 'local_reportium'));
+            writer::export_user_preference(
+                'local_reportium',
+                $record->name,
+                $record->value,
+                get_string('privacy:metadata:preference:columns', 'local_reportium')
+            );
         }
     }
 }

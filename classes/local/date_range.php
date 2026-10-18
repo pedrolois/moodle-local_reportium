@@ -31,7 +31,6 @@ use DateTimeZone;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class date_range {
-
     /** @var int End of "all time" (2038-01-01). */
     const ALL_END = 2145938400;
 
@@ -76,8 +75,13 @@ class date_range {
      * @param DateTimeZone|null $timezone default the user's timezone
      * @return int[] [start, end]
      */
-    public static function resolve(string $preset, int $now = 0, int $from = 0, int $to = 0,
-            ?DateTimeZone $timezone = null): array {
+    public static function resolve(
+        string $preset,
+        int $now = 0,
+        int $from = 0,
+        int $to = 0,
+        ?DateTimeZone $timezone = null
+    ): array {
         $timezone = $timezone ?? \core_date::get_user_timezone_object();
         $now = $now ?: time();
         $today = (new DateTimeImmutable('@' . $now))->setTimezone($timezone)->setTime(0, 0);

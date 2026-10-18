@@ -28,7 +28,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\column_inspector
  */
 final class sql_html_test extends \advanced_testcase {
-
     /**
      * Rows of a one-level report with this SQL.
      *
@@ -60,8 +59,10 @@ final class sql_html_test extends \advanced_testcase {
         $row = $payload['rows'][0];
 
         // The table: the link, with its "?id=" and the site address.
-        $this->assertStringContainsString('href="' . $CFG->wwwroot . '/course/view.php?id=' . $course->id . '"',
-            $row[column_inspector::HTML_KEY]['course']);
+        $this->assertStringContainsString(
+            'href="' . $CFG->wwwroot . '/course/view.php?id=' . $course->id . '"',
+            $row[column_inspector::HTML_KEY]['course']
+        );
         $this->assertStringContainsString('>Course one</a>', $row[column_inspector::HTML_KEY]['course']);
         // Scripts, event handlers and javascript: links never reach the page.
         $evil = $row[column_inspector::HTML_KEY]['evil'];

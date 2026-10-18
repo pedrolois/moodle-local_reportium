@@ -39,7 +39,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class levels extends external_api {
-
     /**
      * Parameters of get_level_data.
      *
@@ -51,11 +50,17 @@ class levels extends external_api {
             'level' => new external_value(PARAM_INT, 'Level to load (0 = root)', VALUE_DEFAULT, 0),
             'path' => new external_multiple_structure(
                 new external_value(PARAM_RAW, 'Value chosen at each previous level'),
-                'Drill path: values chosen at levels 0..level-1', VALUE_DEFAULT, []
+                'Drill path: values chosen at levels 0..level-1',
+                VALUE_DEFAULT,
+                []
             ),
             'courseid' => new external_value(PARAM_INT, 'Course to run a global report in (0 = its own)', VALUE_DEFAULT, 0),
-            'daterange' => new external_value(PARAM_ALPHANUMEXT, 'Period (date_range preset, custom, or empty = all time)',
-                VALUE_DEFAULT, ''),
+            'daterange' => new external_value(
+                PARAM_ALPHANUMEXT,
+                'Period (date_range preset, custom, or empty = all time)',
+                VALUE_DEFAULT,
+                ''
+            ),
             'rangefrom' => new external_value(PARAM_INT, 'First day of a custom period', VALUE_DEFAULT, 0),
             'rangeto' => new external_value(PARAM_INT, 'Last day of a custom period', VALUE_DEFAULT, 0),
             'previous' => new external_value(PARAM_BOOL, 'Data of the period just before (comparison)', VALUE_DEFAULT, false),
@@ -75,12 +80,25 @@ class levels extends external_api {
      * @param bool $previous
      * @return array
      */
-    public static function get_level_data(int $reportid, int $level = 0, array $path = [], int $courseid = 0,
-            string $daterange = '', int $rangefrom = 0, int $rangeto = 0, bool $previous = false): array {
+    public static function get_level_data(
+        int $reportid,
+        int $level = 0,
+        array $path = [],
+        int $courseid = 0,
+        string $daterange = '',
+        int $rangefrom = 0,
+        int $rangeto = 0,
+        bool $previous = false
+    ): array {
         global $USER;
-        $params = self::validate_parameters(self::get_level_data_parameters(),
+        $params = self::validate_parameters(
+            self::get_level_data_parameters(),
             ['reportid' => $reportid, 'level' => $level, 'path' => $path, 'courseid' => $courseid,
-            'daterange' => $daterange, 'rangefrom' => $rangefrom, 'rangeto' => $rangeto, 'previous' => $previous]);
+            'daterange' => $daterange,
+            'rangefrom' => $rangefrom,
+            'rangeto' => $rangeto,
+            'previous' => $previous]
+        );
 
         [$report, $context] = self::load_report_and_context($params['reportid'], $params['courseid']);
         level_service::require_view($report, $context, (int) $USER->id);
@@ -134,8 +152,10 @@ class levels extends external_api {
             return [];
         }
         $levels = array_column(level_service::get_levels((int) $report->id), 'sqlquery', 'level');
-        return array_map(static fn(string $key): string => get_string('slowtip_' . $key, 'local_reportium'),
-            sql_advisor::tips((string) ($levels[$level] ?? ''), $report));
+        return array_map(
+            static fn(string $key): string => get_string('slowtip_' . $key, 'local_reportium'),
+            sql_advisor::tips((string) ($levels[$level] ?? ''), $report)
+        );
     }
 
     /**
@@ -173,23 +193,39 @@ class levels extends external_api {
                 'type' => new external_value(PARAM_ALPHA, 'id | number | date | text'),
                 'format' => new external_value(PARAM_ALPHA, 'Automatic display format (instructions.json)', VALUE_DEFAULT, 'text'),
                 'withtime' => new external_value(PARAM_BOOL, 'Date column with a time of day', VALUE_DEFAULT, false),
-                'html' => new external_value(PARAM_BOOL, 'The SQL returns HTML (cleaned, in the __html of each row)',
-                    VALUE_DEFAULT, false),
-                'calculated' => new external_value(PARAM_BOOL, 'Calculated column (a formula of the level settings)',
-                    VALUE_DEFAULT, false),
+                'html' => new external_value(
+                    PARAM_BOOL,
+                    'The SQL returns HTML (cleaned, in the __html of each row)',
+                    VALUE_DEFAULT,
+                    false
+                ),
+                'calculated' => new external_value(
+                    PARAM_BOOL,
+                    'Calculated column (a formula of the level settings)',
+                    VALUE_DEFAULT,
+                    false
+                ),
             ])),
             'rows' => new external_value(PARAM_RAW, 'JSON array of row objects keyed by column'),
             'mapping' => new external_value(PARAM_RAW, 'JSON: labelcolumn, valuecolumn, metrics[], defaultview, …'),
-            'links' => new external_value(PARAM_RAW, 'JSON: column => {kind: user|course|category, idkey, courseidkey}',
-                VALUE_DEFAULT, '{}'),
+            'links' => new external_value(
+                PARAM_RAW,
+                'JSON: column => {kind: user|course|category, idkey, courseidkey}',
+                VALUE_DEFAULT,
+                '{}'
+            ),
             'hasnext' => new external_value(PARAM_BOOL, 'Whether a deeper level exists'),
             'executionms' => new external_value(PARAM_INT, 'Time the level query took, in milliseconds'),
             'cached' => new external_value(PARAM_BOOL, 'Served from cache'),
             'generatedat' => new external_value(PARAM_INT, 'When the data was generated'),
             'freshnessminutes' => new external_value(PARAM_INT, 'Cache TTL in minutes (0 = live)'),
             'rangelabel' => new external_value(PARAM_TEXT, 'Dates of the period (empty = all time)'),
-            'slowtips' => new external_multiple_structure(new external_value(PARAM_TEXT, 'Tip'),
-                'How to make a slow level faster (only for those who can change its SQL; empty = not slow)', VALUE_DEFAULT, []),
+            'slowtips' => new external_multiple_structure(
+                new external_value(PARAM_TEXT, 'Tip'),
+                'How to make a slow level faster (only for those who can change its SQL; empty = not slow)',
+                VALUE_DEFAULT,
+                []
+            ),
         ]);
     }
 
@@ -290,8 +326,10 @@ class levels extends external_api {
      */
     public static function save_level(int $reportid, int $level, string $sqlquery, string $label = ''): array {
         global $DB, $USER;
-        $params = self::validate_parameters(self::save_level_parameters(),
-            ['reportid' => $reportid, 'level' => $level, 'sqlquery' => $sqlquery, 'label' => $label]);
+        $params = self::validate_parameters(
+            self::save_level_parameters(),
+            ['reportid' => $reportid, 'level' => $level, 'sqlquery' => $sqlquery, 'label' => $label]
+        );
         [$report, $context] = self::load_report_and_context($params['reportid'], 0);
         self::require_manage_sql($report, $context);
         if ($params['level'] < 0) {
@@ -370,15 +408,23 @@ class levels extends external_api {
         [$report, $context] = self::load_report_and_context($params['reportid'], 0);
         self::require_manage_sql($report, $context);
 
-        $deepest = (int) $DB->get_field_sql('SELECT MAX(drilllevel) FROM {' . level_service::TABLE . '} WHERE reportid = ?',
-            [$report->id]);
+        $deepest = (int) $DB->get_field_sql(
+            'SELECT MAX(drilllevel) FROM {' . level_service::TABLE . '} WHERE reportid = ?',
+            [$report->id]
+        );
         if ($params['level'] <= 0 || $params['level'] !== $deepest) {
             throw new moodle_exception('cannotdeletelevel', 'local_reportium');
         }
         $deleted = $DB->get_record(level_service::TABLE, ['reportid' => $report->id, 'drilllevel' => $params['level']]);
         $DB->delete_records(level_service::TABLE, ['reportid' => $report->id, 'drilllevel' => $params['level']]);
-        sql_history::record($report, $params['level'], (string) $deleted->label, (string) $deleted->sqlquery, 'deleted',
-            (int) $USER->id);
+        sql_history::record(
+            $report,
+            $params['level'],
+            (string) $deleted->label,
+            (string) $deleted->sqlquery,
+            'deleted',
+            (int) $USER->id
+        );
         return ['success' => true];
     }
 
@@ -400,8 +446,10 @@ class levels extends external_api {
         return new external_function_parameters([
             'reportid' => new external_value(PARAM_INT, 'Report id'),
             'level' => new external_value(PARAM_INT, 'Level'),
-            'config' => new external_value(PARAM_RAW,
-                'JSON: labelcolumn, valuecolumn, metrics[], defaultview, title, sort, limit, stacked'),
+            'config' => new external_value(
+                PARAM_RAW,
+                'JSON: labelcolumn, valuecolumn, metrics[], defaultview, title, sort, limit, stacked'
+            ),
         ]);
     }
 
@@ -414,8 +462,10 @@ class levels extends external_api {
      * @return array
      */
     public static function save_level_config(int $reportid, int $level, string $config): array {
-        $params = self::validate_parameters(self::save_level_config_parameters(),
-            ['reportid' => $reportid, 'level' => $level, 'config' => $config]);
+        $params = self::validate_parameters(
+            self::save_level_config_parameters(),
+            ['reportid' => $reportid, 'level' => $level, 'config' => $config]
+        );
         [$report, $context] = self::load_report_and_context($params['reportid'], 0);
         if (!self::can_configure($report, $context)) {
             throw new \required_capability_exception($context, 'local/reportium:manage', 'nopermissions', '');
@@ -460,7 +510,7 @@ class levels extends external_api {
         $params = self::validate_parameters(self::get_level_history_parameters(), ['reportid' => $reportid, 'level' => $level]);
         [$report, $context] = self::load_report_and_context($params['reportid'], 0);
         self::require_manage_sql($report, $context);
-        $versions = array_map(static function(array $version): array {
+        $versions = array_map(static function (array $version): array {
             unset($version['userid']);
             return $version;
         }, sql_history::versions((int) $report->id, $params['level']));
@@ -507,8 +557,10 @@ class levels extends external_api {
      */
     public static function restore_level_version(int $reportid, int $versionid): array {
         global $USER;
-        $params = self::validate_parameters(self::restore_level_version_parameters(),
-            ['reportid' => $reportid, 'versionid' => $versionid]);
+        $params = self::validate_parameters(
+            self::restore_level_version_parameters(),
+            ['reportid' => $reportid, 'versionid' => $versionid]
+        );
         [$report, $context] = self::load_report_and_context($params['reportid'], 0);
         self::require_manage_sql($report, $context);
         [$level, $error] = sql_history::restore($report, $params['versionid'], (int) $USER->id);

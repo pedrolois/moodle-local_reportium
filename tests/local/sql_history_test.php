@@ -30,7 +30,6 @@ use local_reportium\external\levels;
  * @covers     \local_reportium\event\level_saved
  */
 final class sql_history_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 

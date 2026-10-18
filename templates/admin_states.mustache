@@ -47,10 +47,44 @@
             </tr>
         </thead>
         <tbody data-region="rows">
-            {{#rows}}{{> local_reportium/admin_states_row }}{{/rows}}
+            {{#rows}}
+            <tr data-region="state-row">
+                <td><input type="text" class="form-control form-control-sm" name="{{name}}[code][]" value="{{code}}" size="14"
+                    aria-label="{{#str}} settings_states_code, local_reportium {{/str}}"></td>
+                <td><input type="color" class="form-control form-control-sm reportium-admin-color" name="{{name}}[color][]"
+                    value="{{color}}" aria-label="{{#str}} settings_states_color, local_reportium {{/str}}"></td>
+                <td><input type="text" class="form-control form-control-sm" name="{{name}}[aliases][]" value="{{aliases}}"
+                    aria-label="{{#str}} settings_states_aliases, local_reportium {{/str}}"></td>
+                <td><input type="text" class="form-control form-control-sm" name="{{name}}[label][]" value="{{label}}" size="14"
+                    aria-label="{{#str}} settings_states_label, local_reportium {{/str}}"></td>
+                <td><span class="reportium-state" data-region="preview"
+                    style="background-color: {{color}}; color: {{textcolor}}">{{preview}}</span></td>
+                <td><button type="button" class="btn btn-link btn-sm text-danger" data-action="remove-state"
+                    title="{{#str}} delete {{/str}}"><i class="fa fa-trash" aria-hidden="true"></i>
+                    <span class="sr-only visually-hidden">{{#str}} delete {{/str}}</span></button></td>
+            </tr>
+            {{/rows}}
         </tbody>
     </table>
-    <template data-region="row-template">{{#empty}}{{> local_reportium/admin_states_row }}{{/empty}}</template>
+    <template data-region="row-template">
+        {{#empty}}
+        <tr data-region="state-row">
+            <td><input type="text" class="form-control form-control-sm" name="{{name}}[code][]" value="{{code}}" size="14"
+                aria-label="{{#str}} settings_states_code, local_reportium {{/str}}"></td>
+            <td><input type="color" class="form-control form-control-sm reportium-admin-color" name="{{name}}[color][]"
+                value="{{color}}" aria-label="{{#str}} settings_states_color, local_reportium {{/str}}"></td>
+            <td><input type="text" class="form-control form-control-sm" name="{{name}}[aliases][]" value="{{aliases}}"
+                aria-label="{{#str}} settings_states_aliases, local_reportium {{/str}}"></td>
+            <td><input type="text" class="form-control form-control-sm" name="{{name}}[label][]" value="{{label}}" size="14"
+                aria-label="{{#str}} settings_states_label, local_reportium {{/str}}"></td>
+            <td><span class="reportium-state" data-region="preview"
+                style="background-color: {{color}}; color: {{textcolor}}">{{preview}}</span></td>
+            <td><button type="button" class="btn btn-link btn-sm text-danger" data-action="remove-state"
+                title="{{#str}} delete {{/str}}"><i class="fa fa-trash" aria-hidden="true"></i>
+                <span class="sr-only visually-hidden">{{#str}} delete {{/str}}</span></button></td>
+        </tr>
+        {{/empty}}
+    </template>
     <button type="button" class="btn btn-secondary btn-sm" data-action="add-state">
         <i class="fa fa-plus" aria-hidden="true"></i> {{#str}} settings_states_add, local_reportium {{/str}}
     </button>

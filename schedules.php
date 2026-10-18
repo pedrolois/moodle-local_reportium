@@ -58,8 +58,10 @@ $PAGE->set_pagelayout('incourse');
 $title = get_string('schedules', 'local_reportium');
 $PAGE->set_title(format_string($report->name) . ' | ' . $title);
 $PAGE->set_heading(get_string('productheading', 'local_reportium'));
-$PAGE->navbar->add(get_string('pluginname', 'local_reportium'),
-    new moodle_url('/local/reportium/managereport.php', ['courseid' => $report->courseid]));
+$PAGE->navbar->add(
+    get_string('pluginname', 'local_reportium'),
+    new moodle_url('/local/reportium/managereport.php', ['courseid' => $report->courseid])
+);
 $PAGE->navbar->add(format_string($report->name), new moodle_url('/local/reportium/viewreport.php', ['id' => $report->id]));
 $PAGE->navbar->add($title);
 
@@ -74,12 +76,19 @@ if ($schedule && in_array($action, ['sendnow', 'pause', 'resume', 'delete'], tru
     if ($action === 'sendnow') {
         $log = scheduler::send($schedule);
         if ($log->status === 'skipped') {
-            redirect($baseurl, get_string('schedule_skippednow', 'local_reportium', s((string) $log->error)), null,
-                \core\output\notification::NOTIFY_INFO);
+            redirect(
+                $baseurl,
+                get_string('schedule_skippednow', 'local_reportium', s((string) $log->error)),
+                null,
+                \core\output\notification::NOTIFY_INFO
+            );
         }
         $message = $log->status === 'sent'
-            ? get_string('schedule_sentnow', 'local_reportium',
-                (object) ['recipients' => $log->recipients, 'rows' => $log->rowcount])
+            ? get_string(
+                'schedule_sentnow',
+                'local_reportium',
+                (object) ['recipients' => $log->recipients, 'rows' => $log->rowcount]
+            )
             : get_string('schedule_failednow', 'local_reportium', s((string) $log->error));
         redirect($baseurl, $message, null, $log->status === 'sent' ? \core\output\notification::NOTIFY_SUCCESS
             : \core\output\notification::NOTIFY_ERROR);
@@ -91,9 +100,11 @@ if ($schedule && in_array($action, ['sendnow', 'pause', 'resume', 'delete'], tru
     }
     if (!optional_param('confirm', 0, PARAM_BOOL)) {
         echo $OUTPUT->header();
-        echo $OUTPUT->confirm(get_string('schedule_confirmdelete', 'local_reportium'),
+        echo $OUTPUT->confirm(
+            get_string('schedule_confirmdelete', 'local_reportium'),
             new moodle_url($baseurl, ['sid' => $schedule->id, 'action' => 'delete', 'confirm' => 1, 'sesskey' => sesskey()]),
-            $baseurl);
+            $baseurl
+        );
         echo $OUTPUT->footer();
         exit;
     }
@@ -140,9 +151,14 @@ if ($action === 'edit') {
                 + ['chart' => $chart]),
             'daterange' => date_range::valid((string) $data->daterange) && $data->daterange !== 'custom'
                 ? (string) $data->daterange : '',
-            'sendcondition' => scheduler::condition_from_form((string) ($data->condtype ?? ''), (string) ($data->condcolumn ?? ''),
-                (string) ($data->condagg ?? ''), (string) ($data->condop ?? ''), (string) ($data->condvalue ?? ''),
-                (string) ($data->condcolumnlabel ?? '')),
+            'sendcondition' => scheduler::condition_from_form(
+                (string) ($data->condtype ?? ''),
+                (string) ($data->condcolumn ?? ''),
+                (string) ($data->condagg ?? ''),
+                (string) ($data->condop ?? ''),
+                (string) ($data->condvalue ?? ''),
+                (string) ($data->condcolumnlabel ?? '')
+            ),
             'subject' => trim((string) $data->subject),
             'message' => trim((string) $data->message),
             'enabled' => (int) $data->enabled,
@@ -212,8 +228,13 @@ if (report_roles::can_edit($report)) {
 echo html_writer::tag('h3', format_string($report->name) . ' · ' . $title, ['class' => 'reportium-report-title']);
 echo html_writer::div(get_string('schedules_desc', 'local_reportium'), 'text-muted mb-3');
 echo html_writer::div(
-    html_writer::link(new moodle_url($baseurl, ['action' => 'edit']), get_string('schedule_add', 'local_reportium'),
-        ['class' => 'btn btn-primary', 'data-action' => 'schedule-add']), 'mb-3');
+    html_writer::link(
+        new moodle_url($baseurl, ['action' => 'edit']),
+        get_string('schedule_add', 'local_reportium'),
+        ['class' => 'btn btn-primary', 'data-action' => 'schedule-add']
+    ),
+    'mb-3'
+);
 
 if (!$schedules) {
     echo $OUTPUT->notification(get_string('schedules_none', 'local_reportium'), \core\output\notification::NOTIFY_INFO, false);
@@ -245,7 +266,8 @@ foreach ($schedules as $item) {
     if ($condition) {
         $what .= html_writer::empty_tag('br') . html_writer::span(
             get_string('schedule_cond_short', 'local_reportium', s(scheduler::condition_summary($condition))),
-            'badge bg-warning text-dark badge-warning');
+            'badge bg-warning text-dark badge-warning'
+        );
     }
     $lists = scheduler::recipient_lists($item);
     $who = [];
@@ -260,8 +282,11 @@ foreach ($schedules as $item) {
         $badge = ['sent' => 'bg-success badge-success', 'skipped' => 'bg-secondary badge-secondary'][$log->status]
             ?? 'bg-danger badge-danger';
         $detail = $log->status === 'sent'
-            ? get_string('schedule_logsent', 'local_reportium',
-                (object) ['recipients' => $log->recipients, 'rows' => $log->rowcount])
+            ? get_string(
+                'schedule_logsent',
+                'local_reportium',
+                (object) ['recipients' => $log->recipients, 'rows' => $log->rowcount]
+            )
             : s((string) $log->error);
         $lastcell .= html_writer::div(userdate($log->timesent, $dateformat) . ' ' .
             html_writer::span(get_string('schedule_status_' . $log->status, 'local_reportium'), 'badge ' . $badge) .
@@ -269,11 +294,14 @@ foreach ($schedules as $item) {
     }
     $actions = '';
     if (scheduler::can_manage($item, $report)) {
-        $link = static function(array $params, string $icon, string $label, bool $sesskey = true) use ($baseurl, $item): string {
+        $link = static function (array $params, string $icon, string $label, bool $sesskey = true) use ($baseurl, $item): string {
             global $OUTPUT;
             $params += ['sid' => $item->id] + ($sesskey ? ['sesskey' => sesskey()] : []);
-            return html_writer::link(new moodle_url($baseurl, $params), $OUTPUT->pix_icon($icon, $label),
-                ['title' => $label, 'class' => 'mr-2 me-2', 'data-action' => 'schedule-' . $params['action']]);
+            return html_writer::link(
+                new moodle_url($baseurl, $params),
+                $OUTPUT->pix_icon($icon, $label),
+                ['title' => $label, 'class' => 'mr-2 me-2', 'data-action' => 'schedule-' . $params['action']]
+            );
         };
         $actions .= $link(['action' => 'edit'], 't/edit', get_string('edit'), false);
         $actions .= $link(['action' => 'sendnow'], 't/email', get_string('schedule_sendnow', 'local_reportium'));

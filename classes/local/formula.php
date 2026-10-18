@@ -30,7 +30,6 @@ use moodle_exception;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class formula {
-
     /** @var array Functions: name => [min arguments, max arguments]. */
     const FUNCTIONS = ['round' => [1, 2], 'abs' => [1, 1], 'min' => [1, 20], 'max' => [1, 20], 'pct' => [2, 2]];
 
@@ -85,8 +84,10 @@ class formula {
         $offset = 0;
         $length = strlen($text);
         while ($offset < $length) {
-            if (!preg_match('/\s*(?:(\d+(?:[.,]\d+)?)|\[([^\]\[]+)\]|([a-zA-Z]+)|([-+*\/(),]))\s*/A', $text, $m, 0, $offset)
-                    || $m[0] === '') {
+            if (
+                !preg_match('/\s*(?:(\d+(?:[.,]\d+)?)|\[([^\]\[]+)\]|([a-zA-Z]+)|([-+*\/(),]))\s*/A', $text, $m, 0, $offset)
+                    || $m[0] === ''
+            ) {
                 throw new moodle_exception('formulainvalid', 'local_reportium');
             }
             $offset += strlen($m[0]);

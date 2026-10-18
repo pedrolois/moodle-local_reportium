@@ -25,7 +25,6 @@ namespace local_reportium\local;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class instructions {
-
     /** @var array|null parsed file */
     protected static $data = null;
 
@@ -258,12 +257,17 @@ class instructions {
         foreach (array_merge($data['columns'] ?? [], self::formats()) as $item) {
             $lines[] = "- {$item['keyword']}: {$item['description']}";
         }
-        $lines[] = 'State codes (values matched ignoring case, accents, spaces and underscores): ' . implode(', ',
-            array_map(static function(array $state): string {
-                $words = array_merge([$state['code'] ?? ''], (array) ($state['aliases'] ?? []));
-                return implode('/', array_filter($words)) .
+        $lines[] = 'State codes (values matched ignoring case, accents, spaces and underscores): ' . implode(
+            ', ',
+            array_map(
+                static function (array $state): string {
+                    $words = array_merge([$state['code'] ?? ''], (array) ($state['aliases'] ?? []));
+                    return implode('/', array_filter($words)) .
                     (!empty($state['description']) ? ' (' . $state['description'] . ')' : '');
-            }, self::state_definitions()));
+                },
+                self::state_definitions()
+            )
+        );
         foreach ($data['conventions'] ?? [] as $convention) {
             $lines[] = '- ' . $convention;
         }

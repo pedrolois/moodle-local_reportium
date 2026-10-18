@@ -4,7 +4,7 @@
         {
             "keyword": "%%PREVIOUSVALUE%%",
             "levels": "drill levels (2 and deeper)",
-            "description": "The value of the item clicked at the previous level, bound as a parameter. Compare it with an id column (c.id = %%PREVIOUSVALUE%%) to receive the id of the clicked row; compare it with any other column to receive its label."
+            "description": "The value of the item clicked at the previous level, bound as a parameter. Compare it with an id column (c.id = %%PREVIOUSVALUE%%) to receive the id of the clicked row; compare it with any other column to receive its label. Compare it with a column (c.category = %%PREVIOUSVALUE%%): on PostgreSQL a parameter alone in the SELECT list, in CONCAT or in IS NULL has no type; there, write CAST(%%PREVIOUSVALUE%% AS TEXT) or compare it."
         },
         {
             "keyword": "%%LEVELVALUE:n%%",

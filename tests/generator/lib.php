@@ -23,7 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class local_reportium_generator extends component_generator_base {
-
     /**
      * Create a report record (SQL type, site level by default).
      *

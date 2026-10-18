@@ -33,7 +33,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class scheduler {
-
     /** @var string Schedules. */
     const TABLE = 'local_reportium_schedule';
 
@@ -62,8 +61,10 @@ class scheduler {
         }
         $agg = (string) ($data['agg'] ?? '');
         $op = (string) ($data['op'] ?? '');
-        if (!in_array($agg, column_inspector::AGGREGATES, true) || !isset(self::OPERATORS[$op])
-                || !is_numeric($data['value'] ?? null) || trim((string) ($data['column'] ?? '')) === '') {
+        if (
+            !in_array($agg, column_inspector::AGGREGATES, true) || !isset(self::OPERATORS[$op])
+                || !is_numeric($data['value'] ?? null) || trim((string) ($data['column'] ?? '')) === ''
+        ) {
             return null;
         }
         $condition = ['type' => 'value', 'column' => (string) $data['column'], 'agg' => $agg, 'op' => $op,
@@ -117,8 +118,14 @@ class scheduler {
      * @param string $label name of the column
      * @return string
      */
-    public static function condition_from_form(string $type, string $column, string $agg, string $op, string $value,
-            string $label = ''): string {
+    public static function condition_from_form(
+        string $type,
+        string $column,
+        string $agg,
+        string $op,
+        string $value,
+        string $label = ''
+    ): string {
         $data = ['type' => $type, 'column' => trim($column), 'agg' => $agg, 'op' => $op,
             'value' => str_replace(',', '.', trim($value)), 'label' => $label];
         $condition = self::condition((object) ['sendcondition' => json_encode($data)]);
@@ -212,8 +219,10 @@ class scheduler {
             'users' => $ints($data['users'] ?? []),
             'cohorts' => $ints($data['cohorts'] ?? []),
             'roles' => $ints($data['roles'] ?? []),
-            'emails' => array_values(array_unique(array_filter(array_map('trim', (array) ($data['emails'] ?? [])),
-                static fn(string $email): bool => validate_email($email)))),
+            'emails' => array_values(array_unique(array_filter(
+                array_map('trim', (array) ($data['emails'] ?? [])),
+                static fn(string $email): bool => validate_email($email)
+            ))),
         ];
     }
 
@@ -253,8 +262,13 @@ class scheduler {
         $userids = array_values(array_unique(array_map('intval', $userids)));
         if ($userids) {
             [$insql, $params] = $DB->get_in_or_equal($userids);
-            foreach ($DB->get_records_select('user', "id $insql AND deleted = 0 AND suspended = 0 AND confirmed = 1",
-                    $params) as $user) {
+            foreach (
+                $DB->get_records_select(
+                    'user',
+                    "id $insql AND deleted = 0 AND suspended = 0 AND confirmed = 1",
+                    $params
+                ) as $user
+            ) {
                 if (validate_email($user->email)) {
                     $recipients[\core_text::strtolower($user->email)] = $user;
                 }
@@ -290,8 +304,10 @@ class scheduler {
             $report = $DB->get_record('local_reportium', ['id' => $schedule->reportid], '*', MUST_EXIST);
             $owner = $DB->get_record('user', ['id' => $schedule->userid, 'deleted' => 0, 'suspended' => 0]);
             $context = report_roles::report_context($report);
-            if (!$owner || !report_roles::can_view($report, (int) $owner->id, $context)
-                    || !has_capability('local/reportium:schedule', $context, $owner)) {
+            if (
+                !$owner || !report_roles::can_view($report, (int) $owner->id, $context)
+                    || !has_capability('local/reportium:schedule', $context, $owner)
+            ) {
                 throw new \moodle_exception('scheduleownerlost', 'local_reportium');
             }
             $recipients = self::recipients($schedule, $report);
@@ -317,8 +333,14 @@ class scheduler {
                     throw new \local_reportium\local\schedule_skipped();
                 }
             }
-            [$path, $filename, $rows] = exporter::write_file($report, $context, (int) $owner->id, (string) $schedule->format,
-                $view, $period);
+            [$path, $filename, $rows] = exporter::write_file(
+                $report,
+                $context,
+                (int) $owner->id,
+                (string) $schedule->format,
+                $view,
+                $period
+            );
             $log->rowcount = $rows;
 
             $from = \core_user::get_noreply_user();
@@ -344,8 +366,10 @@ class scheduler {
         $log->id = $DB->insert_record(self::LOG, $log);
         $DB->set_field(self::TABLE, 'lastrun', $log->timesent, ['id' => $schedule->id]);
         // Only the newest deliveries are kept.
-        $old = $DB->get_fieldset_sql('SELECT id FROM {' . self::LOG . '} WHERE scheduleid = ? ORDER BY timesent DESC, id DESC',
-            [$schedule->id]);
+        $old = $DB->get_fieldset_sql(
+            'SELECT id FROM {' . self::LOG . '} WHERE scheduleid = ? ORDER BY timesent DESC, id DESC',
+            [$schedule->id]
+        );
         if (count($old) > self::KEEP_LOG) {
             [$insql, $params] = $DB->get_in_or_equal(array_slice($old, self::KEEP_LOG));
             $DB->delete_records_select(self::LOG, "id $insql", $params);
@@ -370,13 +394,20 @@ class scheduler {
      * @param stdClass|null $recipient
      * @return string[] "%name%" => value
      */
-    public static function placeholders(stdClass $schedule, stdClass $report, array $range, int $rows,
-            ?stdClass $recipient = null): array {
+    public static function placeholders(
+        stdClass $schedule,
+        stdClass $report,
+        array $range,
+        int $rows,
+        ?stdClass $recipient = null
+    ): array {
         global $SITE;
         $view = json_decode((string) $schedule->viewstate, true);
         $view = is_array($view) ? $view : [];
-        $steps = array_map(static fn($step) => ['v' => (string) ($step['v'] ?? ''), 'l' => (string) ($step['l'] ?? '')],
-            array_values(array_filter((array) ($view['steps'] ?? []), 'is_array')));
+        $steps = array_map(
+            static fn($step) => ['v' => (string) ($step['v'] ?? ''), 'l' => (string) ($step['l'] ?? '')],
+            array_values(array_filter((array) ($view['steps'] ?? []), 'is_array'))
+        );
         $params = ['id' => $report->id];
         if ($steps) {
             $params['rpath'] = json_encode($steps);
@@ -423,8 +454,13 @@ class scheduler {
      * @param stdClass|null $recipient
      * @return string[] [subject, text, html]
      */
-    public static function message(stdClass $schedule, stdClass $report, array $range, int $rows,
-            ?stdClass $recipient = null): array {
+    public static function message(
+        stdClass $schedule,
+        stdClass $report,
+        array $range,
+        int $rows,
+        ?stdClass $recipient = null
+    ): array {
         $values = self::placeholders($schedule, $report, $range, $rows, $recipient);
         $fill = static fn(string $text) => strtr($text, $values);
         $a = (object) ['report' => $values['%reportname%'], 'period' => $values['%period%'], 'rows' => $rows,
@@ -436,7 +472,9 @@ class scheduler {
             $text = $fill($template);
             // Plain text as HTML: escaped, line breaks kept, addresses as links.
             $html = nl2br(preg_replace_callback('~https?://[^\s<]+~', static fn($m) => \html_writer::link(
-                html_entity_decode($m[0]), $m[0]), s($text)));
+                html_entity_decode($m[0]),
+                $m[0]
+            ), s($text)));
             return [$subject, $text, $html];
         }
         $text = get_string('schedule_body', 'local_reportium', $a)
@@ -444,8 +482,10 @@ class scheduler {
             . "\n\n" . get_string('schedule_openreport', 'local_reportium') . ': ' . $values['%linkchart%'];
         $html = \html_writer::tag('p', s(get_string('schedule_body', 'local_reportium', $a)))
             . ($a->period !== '' ? \html_writer::tag('p', s(get_string('schedule_body_period', 'local_reportium', $a))) : '')
-            . \html_writer::tag('p', \html_writer::link($values['%linkchart%'],
-                get_string('schedule_openreport', 'local_reportium')));
+            . \html_writer::tag('p', \html_writer::link(
+                $values['%linkchart%'],
+                get_string('schedule_openreport', 'local_reportium')
+            ));
         return [$subject, $text, $html];
     }
 
@@ -537,8 +577,10 @@ class scheduler {
      */
     public static function view_summary(array $view): string {
         $level = (int) ($view['level'] ?? 0);
-        $labels = array_filter(array_map(static fn($step) => is_array($step) ? trim((string) ($step['l'] ?? '')) : '',
-            (array) ($view['steps'] ?? [])));
+        $labels = array_filter(array_map(
+            static fn($step) => is_array($step) ? trim((string) ($step['l'] ?? '')) : '',
+            (array) ($view['steps'] ?? [])
+        ));
         $text = get_string('ui_sqltitle', 'local_reportium', $level + 1);
         if ($labels) {
             $text .= ': ' . implode(' › ', $labels);
@@ -559,8 +601,11 @@ class scheduler {
         $names = [];
         foreach (level_service::get_levels($reportid) as $level) {
             $name = get_string('ui_sqltitle', 'local_reportium', $level['level'] + 1);
-            $label = trim(str_replace('{parent}', get_string('schedule_parentrow', 'local_reportium', $level['level']),
-                (string) $level['label']));
+            $label = trim(str_replace(
+                '{parent}',
+                get_string('schedule_parentrow', 'local_reportium', $level['level']),
+                (string) $level['label']
+            ));
             // A label that only repeats the name ("Level 2") is not shown twice.
             $names[$level['level']] = $label !== '' && \core_text::strtolower($label) !== \core_text::strtolower($name)
                 ? $name . ': ' . $label : $name;

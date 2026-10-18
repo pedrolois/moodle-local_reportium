@@ -28,7 +28,6 @@ use moodle_exception;
  * @covers     \local_reportium\local\formula
  */
 final class formula_test extends \basic_testcase {
-
     /** @var array Columns of the tests. */
     const COLUMNS = [
         ['key' => 'done', 'label' => 'Done', 'type' => 'number'],

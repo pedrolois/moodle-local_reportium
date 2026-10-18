@@ -32,7 +32,6 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @covers     \local_reportium\local\report_data_helper
  */
 final class levels_rules_test extends \externallib_advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -89,13 +88,16 @@ final class levels_rules_test extends \externallib_advanced_testcase {
         $result = $this->call('save_level', [(int) $this->report->id, 0, $sql, '']);
         $this->assertFalse($result['success']);
         $this->assertSame(get_string($error, 'local_reportium'), $result['error']);
-        $this->assertSame($before, $DB->get_field('local_reportium_level', 'sqlquery',
-            ['reportid' => $this->report->id, 'drilllevel' => 0]));
+        $this->assertSame($before, $DB->get_field(
+            'local_reportium_level',
+            'sqlquery',
+            ['reportid' => $this->report->id, 'drilllevel' => 0]
+        ));
     }
 
     public function test_accepted_sql_with_every_placeholder(): void {
         $sql = 'SELECT c.id, c.fullname FROM {course} c WHERE c.id IN (%%MYCOURSES%%) AND c.timecreated < %%NOW%%'
-            . ' AND c.id <> %%USERID%% AND c.category = %%PREVIOUSVALUE%% AND %%LEVELVALUE:0%% IS NOT NULL';
+            . ' AND c.id <> %%USERID%% AND c.category = %%PREVIOUSVALUE%% AND c.shortname <> %%LEVELVALUE:0%%';
         $result = $this->call('save_level', [(int) $this->report->id, 1, $sql, 'Courses']);
         $this->assertTrue($result['success'], $result['error']);
         $levels = $this->call('get_levels', [(int) $this->report->id, 0]);
@@ -148,8 +150,11 @@ final class levels_rules_test extends \externallib_advanced_testcase {
         $teacher = $gen->create_user();
         $gen->enrol_user($teacher->id, $mine->id, 'editingteacher');
         $report = $gen->get_plugin_generator('local_reportium')->create_report(['name' => 'My courses']);
-        $gen->get_plugin_generator('local_reportium')->create_level($report->id, 0,
-            'SELECT c.id, c.fullname FROM {course} c WHERE c.id IN (%%MYCOURSES%%) ORDER BY c.fullname');
+        $gen->get_plugin_generator('local_reportium')->create_level(
+            $report->id,
+            0,
+            'SELECT c.id, c.fullname FROM {course} c WHERE c.id IN (%%MYCOURSES%%) ORDER BY c.fullname'
+        );
         // A site report: shared with every logged-in user (a role held only inside a course does not open it).
         \local_reportium\local\report_roles::set((int) $report->id, [(int) $CFG->defaultuserroleid]);
 

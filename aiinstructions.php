@@ -36,5 +36,12 @@ if (!\local_reportium\local\report_roles::can_manage_sql($context)) {
     throw new moodle_exception('nosqlpermissions', 'local_reportium');
 }
 
-send_file(\local_reportium\local\ai_instructions::prompt_file(null),
-    \local_reportium\local\ai_instructions::prompt_filename(null), 0, 0, true, true, 'text/markdown');
+send_file(
+    \local_reportium\local\ai_instructions::prompt_file(null),
+    \local_reportium\local\ai_instructions::prompt_filename(null),
+    0,
+    0,
+    true,
+    true,
+    'text/markdown'
+);

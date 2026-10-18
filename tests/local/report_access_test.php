@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\report_roles
  */
 final class report_access_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -53,8 +52,10 @@ final class report_access_test extends \advanced_testcase {
     public function test_new_reports_are_for_managers(): void {
         global $DB;
         report_roles::set_defaults((int) $this->report->id);
-        $this->assertSame([(int) $DB->get_field('role', 'id', ['shortname' => 'manager'])],
-            report_roles::get((int) $this->report->id));
+        $this->assertSame(
+            [(int) $DB->get_field('role', 'id', ['shortname' => 'manager'])],
+            report_roles::get((int) $this->report->id)
+        );
         // Defaults do not replace roles already chosen.
         $teacher = (int) $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
         report_roles::set((int) $this->report->id, [$teacher]);
@@ -117,8 +118,11 @@ final class report_access_test extends \advanced_testcase {
         $teacher = $this->user_with_role('editingteacher');
         $this->assertFalse(report_roles::can_view($this->report, (int) $teacher->id, \context_system::instance()));
         $this->assertTrue(report_roles::can_view($this->report, (int) get_admin()->id, \context_system::instance()));
-        $this->assertTrue(report_roles::can_view($this->report, (int) $this->user_with_role('manager')->id,
-            \context_system::instance()));
+        $this->assertTrue(report_roles::can_view(
+            $this->report,
+            (int) $this->user_with_role('manager')->id,
+            \context_system::instance()
+        ));
     }
 
     public function test_a_shared_role_also_needs_the_view_capability(): void {

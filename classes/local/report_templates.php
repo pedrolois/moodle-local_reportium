@@ -31,7 +31,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_templates {
-
     /** @var string Period condition of log queries (see with_period()). */
     const PERIOD = 'l.timecreated BETWEEN %%STARTTIME%% AND %%ENDTIME%% AND ';
 
@@ -1174,8 +1173,11 @@ class report_templates {
                 'usermodified' => $userid,
             ]);
         }
-        set_config('cachettlminutes_report_' . $report->id, max(0, (int) get_config('local_reportium', 'defaultcachettl')),
-            'local_reportium');
+        set_config(
+            'cachettlminutes_report_' . $report->id,
+            max(0, (int) get_config('local_reportium', 'defaultcachettl')),
+            'local_reportium'
+        );
         $transaction->allow_commit();
         return (int) $report->id;
     }
@@ -1237,8 +1239,11 @@ class report_templates {
      */
     protected static function with_period(array $levels): array {
         foreach ($levels as $index => $level) {
-            $levels[$index]['sql'] = preg_replace('/(FROM \{logstore_standard_log\} [ls]\s(?:(?!WHERE|\)).)*?WHERE )/s',
-                '$1' . self::PERIOD, $level['sql']);
+            $levels[$index]['sql'] = preg_replace(
+                '/(FROM \{logstore_standard_log\} [ls]\s(?:(?!WHERE|\)).)*?WHERE )/s',
+                '$1' . self::PERIOD,
+                $level['sql']
+            );
         }
         return $levels;
     }
@@ -1306,7 +1311,7 @@ class report_templates {
      */
     public static function clean_sql(string $sql): string {
         $lines = array_map('trim', explode("\n", trim($sql)));
-        return implode("\n", array_filter($lines, static function(string $line): bool {
+        return implode("\n", array_filter($lines, static function (string $line): bool {
             return $line !== '';
         }));
     }

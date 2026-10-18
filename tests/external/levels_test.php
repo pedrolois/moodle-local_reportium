@@ -31,7 +31,6 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @covers     \local_reportium\external\levels
  */
 final class levels_test extends \externallib_advanced_testcase {
-
     /** @var \stdClass */
     private $report;
     /** @var \stdClass a user with no special role */

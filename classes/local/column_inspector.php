@@ -127,7 +127,7 @@ class column_inspector {
      * @return array[] rows
      */
     public static function convert_text_dates(array $columns, array $rows): array {
-        $keys = array_column(array_filter($columns, static function(array $column): bool {
+        $keys = array_column(array_filter($columns, static function (array $column): bool {
             return !empty($column['textdate']);
         }), 'key');
         if (!$keys) {
@@ -151,10 +151,10 @@ class column_inspector {
      */
     public static function detect_type(string $key, array $values): string {
         $lkey = strtolower($key);
-        $allnumeric = $values && array_reduce($values, static function(bool $carry, $value): bool {
+        $allnumeric = $values && array_reduce($values, static function (bool $carry, $value): bool {
             return $carry && is_numeric(trim((string) $value));
         }, true);
-        $allintegers = $allnumeric && array_reduce($values, static function(bool $carry, $value): bool {
+        $allintegers = $allnumeric && array_reduce($values, static function (bool $carry, $value): bool {
             return $carry && preg_match('/^-?\d+$/', trim((string) $value));
         }, true);
 
@@ -162,7 +162,7 @@ class column_inspector {
             return self::TYPE_ID;
         }
         if ($allintegers && preg_match('/(time|date|created|modified|access|start|end)/', $lkey)) {
-            $intimestamprange = array_reduce($values, static function(bool $carry, $value): bool {
+            $intimestamprange = array_reduce($values, static function (bool $carry, $value): bool {
                 $value = (int) $value;
                 return $carry && ($value === 0 || ($value >= self::MIN_TIMESTAMP && $value <= self::MAX_TIMESTAMP));
             }, true);
@@ -194,8 +194,10 @@ class column_inspector {
         foreach ($columns as $i => $column) {
             foreach ($rows as $row) {
                 $value = (string) ($row[$column['key']] ?? '');
-                if ($value !== '' &&
-                        preg_match('/<\s*\/?\s*(a|b|i|u|em|strong|span|br|img|div|p|small|ul|ol|li|font)\b/i', $value)) {
+                if (
+                    $value !== '' &&
+                        preg_match('/<\s*\/?\s*(a|b|i|u|em|strong|span|br|img|div|p|small|ul|ol|li|font)\b/i', $value)
+                ) {
                     $html[] = $column['key'];
                     $columns[$i]['html'] = true;
                     break;
@@ -216,7 +218,8 @@ class column_inspector {
                 $rows[$r][self::HTML_KEY][$key] = $html;
                 // The text of what is shown (cleaned and filtered), never the content of removed tags such as scripts.
                 $rows[$r][$key] = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags(
-                    preg_replace('/<br\s*\/?>/i', ' ', $html)), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+                    preg_replace('/<br\s*\/?>/i', ' ', $html)
+                ), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
             }
         }
         return [$columns, $rows];
@@ -324,7 +327,7 @@ class column_inspector {
             // Only numbers/ids: label with the first column that is not a metric candidate.
             $label = $bytype[self::TYPE_ID][0] ?? $columns[0]['key'];
         }
-        $metrics = array_values(array_filter($bytype[self::TYPE_NUMBER] ?? [], static function(string $key) use ($label): bool {
+        $metrics = array_values(array_filter($bytype[self::TYPE_NUMBER] ?? [], static function (string $key) use ($label): bool {
             return $key !== $label;
         }));
         $isdatelabel = $label !== null && in_array($label, $bytype[self::TYPE_DATE] ?? [], true);

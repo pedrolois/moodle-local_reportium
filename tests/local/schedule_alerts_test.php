@@ -27,7 +27,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\exporter
  */
 final class schedule_alerts_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -40,9 +39,12 @@ final class schedule_alerts_test extends \advanced_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
         $this->report = $generator->create_report(['name' => 'Progress alert']);
         // Completion 40 and 60: average 50, minimum 40, sum 100.
-        $generator->create_level($this->report->id, 0,
+        $generator->create_level(
+            $this->report->id,
+            0,
             "SELECT 1 AS id, 'Alpha' AS name, 40 AS completion_pct, 4 AS done, 10 AS total
-             UNION ALL SELECT 2, 'Beta', 60, 6, 10");
+             UNION ALL SELECT 2, 'Beta', 60, 6, 10"
+        );
     }
 
     /**
@@ -65,8 +67,10 @@ final class schedule_alerts_test extends \advanced_testcase {
     public function test_condition_from_the_form_is_cleaned(): void {
         $this->assertSame('', scheduler::condition_from_form('', 'x', 'avg', 'lt', '1'));
         $this->assertSame('{"type":"rows"}', scheduler::condition_from_form('rows', '', '', '', ''));
-        $this->assertSame(['type' => 'value', 'column' => 'completion_pct', 'agg' => 'avg', 'op' => 'lt', 'value' => 50.5],
-            json_decode(scheduler::condition_from_form('value', ' completion_pct ', 'avg', 'lt', '50,5'), true));
+        $this->assertSame(
+            ['type' => 'value', 'column' => 'completion_pct', 'agg' => 'avg', 'op' => 'lt', 'value' => 50.5],
+            json_decode(scheduler::condition_from_form('value', ' completion_pct ', 'avg', 'lt', '50,5'), true)
+        );
         // Unknown calculation, comparison, missing column or a threshold that is not a number: always sent.
         $this->assertSame('', scheduler::condition_from_form('value', 'completion_pct', 'median', 'lt', '1'));
         $this->assertSame('', scheduler::condition_from_form('value', 'completion_pct', 'avg', 'like', '1'));
@@ -117,16 +121,24 @@ final class schedule_alerts_test extends \advanced_testcase {
         $this->assertSame([true, 2.0], scheduler::condition_met(['type' => 'rows'], $columns, [['n' => 1], ['n' => 2]]));
         // A column the view does not have (renamed in the SQL): not met.
         $this->assertSame([false, null], scheduler::condition_met(
-            ['type' => 'value', 'column' => 'gone', 'agg' => 'sum', 'op' => 'gt', 'value' => 0], $columns, [['n' => 1]]));
+            ['type' => 'value', 'column' => 'gone', 'agg' => 'sum', 'op' => 'gt', 'value' => 0],
+            $columns,
+            [['n' => 1]]
+        ));
         // A column without numbers: not met.
         $this->assertSame([false, null], scheduler::condition_met(
-            ['type' => 'value', 'column' => 'n', 'agg' => 'avg', 'op' => 'gt', 'value' => 0], $columns, [['n' => 'x']]));
+            ['type' => 'value', 'column' => 'n', 'agg' => 'avg', 'op' => 'gt', 'value' => 0],
+            $columns,
+            [['n' => 'x']]
+        ));
     }
 
     public function test_summary_is_readable(): void {
         $condition = ['type' => 'value', 'column' => 'completion_pct', 'agg' => 'avg', 'op' => 'lt', 'value' => 50.0];
-        $this->assertSame('Average of Completion < 50',
-            scheduler::condition_summary($condition, ['completion_pct' => 'Completion']));
+        $this->assertSame(
+            'Average of Completion < 50',
+            scheduler::condition_summary($condition, ['completion_pct' => 'Completion'])
+        );
         $this->assertSame('Average of completion_pct < 50', scheduler::condition_summary($condition));
         $this->assertSame('The view has rows', scheduler::condition_summary(['type' => 'rows']));
         $this->assertSame('', scheduler::condition_summary(null));
@@ -175,9 +187,12 @@ final class schedule_alerts_test extends \advanced_testcase {
 
     public function test_an_alert_on_a_calculated_column(): void {
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
-        $generator->create_level($this->report->id, 0,
+        $generator->create_level(
+            $this->report->id,
+            0,
             "SELECT 1 AS id, 'Alpha' AS name, 4 AS done, 10 AS total UNION ALL SELECT 2, 'Beta', 6, 10",
-            ['calculated' => [['key' => 'calc_rate', 'label' => 'Rate', 'formula' => 'pct([done], [total])']]]);
+            ['calculated' => [['key' => 'calc_rate', 'label' => 'Rate', 'formula' => 'pct([done], [total])']]]
+        );
         $sink = $this->redirectEmails();
         // Average rate 50: "sum of the rate > 99" is met (40 + 60).
         $log = scheduler::send($this->schedule(scheduler::condition_from_form('value', 'calc_rate', 'sum', 'gt', '99')));

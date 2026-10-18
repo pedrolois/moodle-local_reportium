@@ -28,7 +28,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\column_inspector
  */
 final class exporter_summary_test extends \advanced_testcase {
-
     /** @var array Columns of the summary tests. */
     const COLUMNS = [
         ['key' => 'name', 'label' => 'Name', 'type' => 'text', 'format' => 'text'],
@@ -63,8 +62,11 @@ final class exporter_summary_test extends \advanced_testcase {
         $this->assertSame('33.3', exporter::aggregate_text(100 / 3, self::COLUMNS[1], 'avg'));
         $this->assertSame('-', exporter::aggregate_text(null, self::COLUMNS[1], 'sum'));
         $date = ['key' => 'd', 'label' => 'D', 'type' => column_inspector::TYPE_DATE];
-        $this->assertSame(userdate(86400 * 365, str_replace(['%y', ', '], ['%Y', ' '],
-            get_string('strftimedatefullshort', 'langconfig'))), exporter::aggregate_text(86400 * 365, $date, 'max'));
+        $this->assertSame(userdate(86400 * 365, str_replace(
+            ['%y', ', '],
+            ['%Y', ' '],
+            get_string('strftimedatefullshort', 'langconfig')
+        )), exporter::aggregate_text(86400 * 365, $date, 'max'));
         $this->assertSame('Latest', exporter::aggregate_name('max', $date));
         $this->assertSame('Earliest', exporter::aggregate_name('min', $date));
         $this->assertSame('Average', exporter::aggregate_name('avg', self::COLUMNS[1]));
@@ -165,9 +167,13 @@ final class exporter_summary_test extends \advanced_testcase {
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
         $report = $generator->create_report();
-        $generator->create_level($report->id, 0, "SELECT 'A' AS name, 2 AS done, 4 AS total UNION ALL SELECT 'B', 3, 3",
+        $generator->create_level(
+            $report->id,
+            0,
+            "SELECT 'A' AS name, 2 AS done, 4 AS total UNION ALL SELECT 'B', 3, 3",
             ['calculated' => [['key' => 'calc_rate', 'label' => 'Rate', 'formula' => 'pct([done], [total])',
-                'format' => 'progress']]]);
+            'format' => 'progress']]]
+        );
         set_user_preference(exporter::ORDER_PREFERENCE . $report->id, json_encode(['0' => ['calc_rate', 'name']]));
         [$columns, $rows] = exporter::view_rows($report, \context_system::instance(), get_admin()->id, ['level' => 0]);
         $this->assertSame(['calc_rate', 'name', 'done', 'total'], array_column($columns, 'key'));
@@ -192,15 +198,22 @@ final class exporter_summary_test extends \advanced_testcase {
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
         $report = $generator->create_report();
-        $generator->create_level($report->id, 0, "SELECT 'A' AS name, 2 AS done",
+        $generator->create_level(
+            $report->id,
+            0,
+            "SELECT 'A' AS name, 2 AS done",
             ['calculated' => [['key' => 'calc_x', 'label' => 'X', 'formula' => '[done] * 10'],
                 ['key' => 'calc_bad', 'label' => 'Bad', 'formula' => 'system(1)']],
-                'kpis' => [['key' => 'calc_x', 'agg' => 'sum']]]);
+            'kpis' => [['key' => 'calc_x',
+            'agg' => 'sum']]]
+        );
         $payload = level_service::get_level_payload($report, 0, [], \context_system::instance(), get_admin()->id);
         $this->assertSame(['name', 'done', 'calc_x'], array_column($payload['columns'], 'key'));
         $this->assertSame(20.0, $payload['rows'][0]['calc_x']);
-        $this->assertSame([['key' => 'calc_x', 'label' => 'X', 'formula' => '[done] * 10', 'format' => 'text']],
-            $payload['mapping']['calculated']);
+        $this->assertSame(
+            [['key' => 'calc_x', 'label' => 'X', 'formula' => '[done] * 10', 'format' => 'text']],
+            $payload['mapping']['calculated']
+        );
         // A KPI card may use a calculated column.
         $this->assertSame([['key' => 'calc_x', 'agg' => 'sum']], $payload['mapping']['kpis']);
     }

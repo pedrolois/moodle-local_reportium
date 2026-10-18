@@ -30,7 +30,6 @@ use local_reportium\local\sql_history;
  * @covers     \local_reportium\event\level_restored
  */
 final class level_events_test extends \advanced_testcase {
-
     public function test_events_of_a_course_report(): void {
         $this->resetAfterTest();
         $this->setAdminUser();

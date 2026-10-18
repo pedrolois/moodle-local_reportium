@@ -112,8 +112,12 @@ class report_data_helper {
         }
 
         $component = 'local_reportium';
-        if (preg_match('/\b(INSERT|INTO|CREATE|ALTER|DELETE|DROP|GRANT|TRUNCATE|UPDATE|SET|VACUUM|REINDEX|DISCARD|LOCK)\b/i',
-                $sql)) {
+        if (
+            preg_match(
+                '/\b(INSERT|INTO|CREATE|ALTER|DELETE|DROP|GRANT|TRUNCATE|UPDATE|SET|VACUUM|REINDEX|DISCARD|LOCK)\b/i',
+                $sql
+            )
+        ) {
             return get_string('notallowedwords', $component);
         }
         if (strpos($sql, ';') !== false) {
@@ -144,5 +148,4 @@ class report_data_helper {
 
         return null;
     }
-
 }

@@ -31,13 +31,16 @@ require_once($CFG->libdir . '/adminlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class setting_states extends \admin_setting {
-
     /**
      * Constructor.
      */
     public function __construct() {
-        parent::__construct('local_reportium/states', get_string('settings_states', 'local_reportium'),
-            get_string('settings_states_desc', 'local_reportium'), '');
+        parent::__construct(
+            'local_reportium/states',
+            get_string('settings_states', 'local_reportium'),
+            get_string('settings_states_desc', 'local_reportium'),
+            ''
+        );
     }
 
     /**
@@ -110,7 +113,15 @@ class setting_states extends \admin_setting {
                 'textcolor' => '#ffffff'],
         ]);
         $PAGE->requires->js_call_amd('local_reportium/admin_states', 'init', [$this->get_id()]);
-        return format_admin_setting($this, $this->visiblename, $html, $this->description, false, '',
-            get_string('settings_states_default', 'local_reportium'), $query);
+        return format_admin_setting(
+            $this,
+            $this->visiblename,
+            $html,
+            $this->description,
+            false,
+            '',
+            get_string('settings_states_default', 'local_reportium'),
+            $query
+        );
     }
 }
