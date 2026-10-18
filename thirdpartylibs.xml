@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<libraries>
+    <library>
+        <location>vendor/echarts</location>
+        <name>Apache ECharts</name>
+        <version>5.6.1</version>
+        <license>Apache</license>
+        <licenseversion>2.0</licenseversion>
+    </library>
+</libraries>

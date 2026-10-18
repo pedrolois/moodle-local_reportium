@@ -1,0 +1,499 @@
+{
+    "about": "Reportium instructions: everything a report author needs to know. Placeholders are replaced in the SQL of a level; column keywords decide how a column is shown; scopes say where each setting lives; features describe what the plugin does and where it is configured. Read by the plugin (PHP and JavaScript) and given to the AI assistant, so everybody follows the same rules. Edit here to change them.",
+    "placeholders": [
+        {
+            "keyword": "%%PREVIOUSVALUE%%",
+            "levels": "drill levels (2 and deeper)",
+            "description": "The value of the item clicked at the previous level, bound as a parameter. Compare it with an id column (c.id = %%PREVIOUSVALUE%%) to receive the id of the clicked row; compare it with any other column to receive its label."
+        },
+        {
+            "keyword": "%%LEVELVALUE:n%%",
+            "levels": "drill levels (2 and deeper)",
+            "description": "The value chosen at level n of the drill path, starting at 0 (%%LEVELVALUE:0%% is the item clicked in the first level). Bound as a parameter."
+        },
+        {
+            "keyword": "%%NOW%%",
+            "levels": "all levels",
+            "description": "The current time as a unix timestamp, e.g. to find overdue activities (duedate < %%NOW%%)."
+        },
+        {
+            "keyword": "%%MYCOURSES%%",
+            "levels": "all levels",
+            "description": "The courses of the user viewing the report, for one report that serves everybody: use it as c.id IN (%%MYCOURSES%%). Courses where the user has a part: enrolled in (student, teacher...), holding a role in the course without enrolment, or holding a role in its category or a parent category (category teacher/manager). Every course for users who can see all courses (site administrators, site managers); no course for users with none of these."
+        },
+        {
+            "keyword": "%%USERID%%",
+            "levels": "all levels",
+            "description": "Id of the user viewing the report (e.g. u.id = %%USERID%% for \"my own data\")."
+        },
+        {
+            "keyword": "%%COURSEID%%",
+            "levels": "all levels",
+            "description": "Id of the course the report is viewed in (the site for site reports)."
+        },
+        {
+            "keyword": "%%CATEGORYID%%",
+            "levels": "all levels",
+            "description": "Category id of the course the report is viewed in."
+        },
+        {
+            "keyword": "{table}",
+            "levels": "all levels",
+            "description": "Moodle table name without prefix, e.g. {course}, {user}. prefix_table also works."
+        },
+        {
+            "keyword": "%%WWWROOT%%",
+            "levels": "all levels",
+            "description": "Address of the Moodle site, e.g. to build links: CONCAT(%%WWWROOT%%, '/course/view.php?id=', c.id)."
+        },
+        {
+            "keyword": "%%STARTTIME%% / %%ENDTIME%%",
+            "levels": "all levels",
+            "description": "Start and end (unix timestamps, both included) of the period chosen in the report toolbar: all time, today, last 7/30/90 days, this/last week, month, quarter or year, last 12 months, or custom dates. Use them to filter by date, e.g. AND l.timecreated BETWEEN %%STARTTIME%% AND %%ENDTIME%%. A report whose SQL uses them shows the period selector and \"Compare with the previous period\"; its form sets the period shown first. With no period chosen they cover all time."
+        },
+        {
+            "keyword": "%%FILTER_...%%",
+            "levels": "not active yet",
+            "description": "Reserved for server filters (coming soon): filters that act inside the SQL, e.g. a date range before counting. For now they are ignored; row filters are done with the column funnels and the Filters panel."
+        }
+    ],
+    "columns": [
+        {
+            "keyword": "id (first column), *id",
+            "match": "^id$|_id$|[a-z]id$",
+            "type": "id",
+            "description": "Integer id columns are hidden in the table and passed to the next level when it compares %%PREVIOUSVALUE%% with an id. Put the id first."
+        },
+        {
+            "keyword": "*time*, *date*, *created*, *modified*, *access*, *start*, *end*",
+            "match": "time|date|created|modified|access|start|end",
+            "type": "date",
+            "description": "Integer columns with these words that hold unix timestamps are shown as dates."
+        },
+        {
+            "keyword": "(any column whose values are all dates written as text)",
+            "match": "d/m/Y or Y-m-d, optionally with H:i or H:i:s",
+            "type": "date",
+            "description": "Dates already formatted by the SQL (DATE_FORMAT, FROM_UNIXTIME) are dates too: they get a From / To filter and sort by date. Slashes are read day first (06/10/2026 = 6 October)."
+        }
+    ],
+    "formats": [
+        {
+            "format": "progress",
+            "keyword": "*_pct, *progress*, *percent*, *porcentaje*, *progreso*",
+            "match": "(^|_)(progress|pct|percent|percentage|porcentaje|progreso)(_|$)",
+            "types": [
+                "number"
+            ],
+            "description": "Shown as a progress bar (0-100) in the table. The bar takes one colour from its value: red (0%), orange (50%), green (100%). The words and the colours can be changed in the plugin settings (Column formats).",
+            "keywords": [
+                "progress",
+                "pct",
+                "percent",
+                "percentage",
+                "porcentaje",
+                "progreso"
+            ],
+            "colors": {
+                "low": "#c71c22",
+                "mid": "#f0ad4e",
+                "high": "#73a839"
+            }
+        },
+        {
+            "format": "state",
+            "keyword": "*_state, *_status, *_estado, state, status, estado",
+            "match": "(^|_)(state|status|estado)$",
+            "types": [
+                "text"
+            ],
+            "description": "A state code from the list below, shown as a coloured, translated label. Unknown values are shown as plain text. The words, the state codes, their colours and the values that match them can be changed in the plugin settings (Column formats).",
+            "keywords": [
+                "state",
+                "status",
+                "estado"
+            ]
+        },
+        {
+            "format": "text",
+            "keyword": "(anything else)",
+            "match": "",
+            "types": [],
+            "description": "Shown as it comes from the SQL (dates formatted)."
+        }
+    ],
+    "statesmatching": "A value matches a state when, ignoring case, accents, spaces, hyphens and underscores, it equals the code or one of its aliases (\"In Progress\" = inprogress, \"Sí\" = si).",
+    "states": [
+        {
+            "code": "completed",
+            "color": "#73a839",
+            "aliases": [
+                "complete",
+                "done",
+                "finished",
+                "passed",
+                "completado",
+                "completada",
+                "terminado",
+                "finalizado",
+                "aprobado"
+            ],
+            "description": "Completed or passed."
+        },
+        {
+            "code": "inprogress",
+            "color": "#f0ad4e",
+            "aliases": [
+                "started",
+                "ongoing",
+                "enprogreso",
+                "encurso",
+                "iniciado"
+            ],
+            "description": "Started, not completed yet."
+        },
+        {
+            "code": "notstarted",
+            "color": "#6c757d",
+            "aliases": [
+                "notyetstarted",
+                "pending",
+                "noiniciado",
+                "sinempezar",
+                "pendiente"
+            ],
+            "description": "Not started yet."
+        },
+        {
+            "code": "submitted",
+            "color": "#ffcc00",
+            "description": "Assignment submitted, not graded yet.",
+            "aliases": [
+                "entregado",
+                "enviado"
+            ]
+        },
+        {
+            "code": "notcompleted",
+            "color": "#c71c22",
+            "aliases": [
+                "failed",
+                "overdue",
+                "nocompletado",
+                "suspenso",
+                "fallido",
+                "vencido",
+                "atrasado"
+            ],
+            "description": "Activity failed, or not completed and overdue."
+        },
+        {
+            "code": "futurenotcompleted",
+            "color": "#025187",
+            "description": "Activity not completed yet, not overdue.",
+            "aliases": [
+                "porcompletar"
+            ]
+        },
+        {
+            "code": "active",
+            "color": "#73a839",
+            "aliases": [
+                "enabled",
+                "activo",
+                "activa",
+                "habilitado"
+            ],
+            "description": "Active (enrolment, account...)."
+        },
+        {
+            "code": "suspended",
+            "color": "#c71c22",
+            "aliases": [
+                "disabled",
+                "inactive",
+                "suspendido",
+                "deshabilitado",
+                "inactivo"
+            ],
+            "description": "Suspended (enrolment, account...)."
+        },
+        {
+            "code": "accessed",
+            "color": "#73a839",
+            "description": "The user has accessed the course.",
+            "aliases": [
+                "accedido"
+            ]
+        },
+        {
+            "code": "neveraccessed",
+            "color": "#c71c22",
+            "description": "The user has never accessed the course.",
+            "aliases": [
+                "nuncaaccedido",
+                "sinacceso"
+            ]
+        },
+        {
+            "code": "issued",
+            "color": "#73a839",
+            "aliases": [
+                "awarded",
+                "earned",
+                "emitido",
+                "otorgado",
+                "conseguido"
+            ],
+            "description": "Badge or certificate issued."
+        },
+        {
+            "code": "notissued",
+            "color": "#6c757d",
+            "aliases": [
+                "notawarded",
+                "notearned",
+                "noemitido",
+                "nootorgado"
+            ],
+            "description": "Badge or certificate not issued."
+        },
+        {
+            "code": "yes",
+            "color": "#73a839",
+            "aliases": [
+                "true",
+                "si"
+            ],
+            "description": "Yes."
+        },
+        {
+            "code": "no",
+            "color": "#c71c22",
+            "aliases": [
+                "false"
+            ],
+            "description": "No."
+        }
+    ],
+    "conventions": [
+        "One complete SELECT per level, no LIMIT (the plugin limits rows), portable across MySQL/MariaDB, PostgreSQL and MSSQL.",
+        "The first text column is the label (X axis / slice name); number columns are the metrics (Y).",
+        "To label rows with two columns use the chart settings \"X axis\" combinations, e.g. Fullname (Email).",
+        "Return state codes (see states), never translated text: the interface translates them.",
+        "After a plugin update, reload the page with Ctrl+F5 (or DevTools > Disable cache) so the browser takes the new styles.",
+        "Moodle completion states are numbers: course_modules_completion.completionstate 0 = not complete, 1 = complete, 2 = complete and passed, 3 = complete but failed. Return state codes instead, e.g. CASE WHEN cmc.completionstate IN (1, 2) THEN 'completed' WHEN cmc.completionstate = 3 THEN 'notcompleted' ELSE 'notstarted' END AS completion_state; course completion: course_completions.timecompleted > 0 = completed.",
+        "Only activities with completion tracking have a completion state: course_modules.completion <> 0. Skip deleted ones: course_modules.deletioninprogress = 0.",
+        "Activity names live in the table of each module ({quiz}, {assign}, {forum}, {page}, {url}, {resource}...), joined with course_modules.instance and modules.name: LEFT JOIN {quiz} q ON m.name = 'quiz' AND q.id = cm.instance (one LEFT JOIN per module, then COALESCE(q.name, a.name, ...) AS activity).",
+        "Logs: {logstore_standard_log} (userid, courseid, component, eventname, target, action, crud, contextlevel, contextinstanceid, relateduserid, origin, ip, timecreated); courseid 0 or 1 = the site, outside courses."
+    ],
+    "scopes": [
+        {
+            "scope": "report",
+            "where": "Report form (Add report / Report tab) and the Reports manager columns",
+            "settings": "name, summary, export formats, chart types offered, roles that can view it, ready-made template or custom"
+        },
+        {
+            "scope": "level",
+            "where": "SQL Inspector (SQL) and Chart settings > Save as default, at that drill level",
+            "settings": "SQL, X axis, chart types shown at the level (subset of the report's), default chart type, rows per page, column formats"
+        },
+        {
+            "scope": "chart type of a level",
+            "where": "Chart settings > Save as default while that chart type is on screen",
+            "settings": "metrics (Y) and Stack series of Bar, Pie and Line separately (a pie keeps one metric without touching the bars)"
+        },
+        {
+            "scope": "viewer (URL, not saved)",
+            "where": "what the viewer is doing; shareable link",
+            "settings": "rpath drill path, rview chart type, rq search, rf filters, rmap settings applied with Apply, rcmp compared item, rsort column sort, rpage page"
+        }
+    ],
+    "features": [
+        {
+            "feature": "Drill-down",
+            "where": "Click a bar, slice or table row",
+            "description": "Each level runs its own SQL with the clicked value (%%PREVIOUSVALUE%%). Breadcrumbs go back; the home icon returns to level 1."
+        },
+        {
+            "feature": "Chart types",
+            "where": "Toolbar buttons Bar / Pie / Line / Table",
+            "description": "The report offers some types (Reports manager column or report form); each level may show a subset (Chart settings). A type that is not allowed falls back to the first allowed."
+        },
+        {
+            "feature": "Side panels",
+            "where": "Tabs on the right edge: Filters (funnel), Chart settings (gear + chart), SQL (code)",
+            "description": "One drawer open at a time; close (x) on the right of its header. SQL only for users who can manage SQL reports."
+        },
+        {
+            "feature": "Chart settings",
+            "where": "Chart settings drawer",
+            "description": "X axis (also combinations such as Fullname (Email)), metrics, Stack series (bars with 2+ metrics), rows per page, column formats, chart types of the level. Apply = for now (URL); Save as default = stored for the level; Reset to automatic."
+        },
+        {
+            "feature": "Filters",
+            "where": "Filters drawer and the funnel next to each column header",
+            "description": "Same filters in both places: a list of values for text, Contains... when a text column has too many values, Min/Max for numbers, From/To with a calendar for dates. They apply to chart, table, totals, pagination and downloads."
+        },
+        {
+            "feature": "Sorting",
+            "where": "Arrows in each column header",
+            "description": "Ascending, descending, back to the SQL order. The chart and the downloads follow the same order."
+        },
+        {
+            "feature": "Pagination",
+            "where": "Under each table",
+            "description": "20 rows per page by default (Rows per page in Chart settings). The chart shows the same page; totals and downloads count every row."
+        },
+        {
+            "feature": "Search",
+            "where": "Search box in the toolbar",
+            "description": "Filters the rows of the level in every view."
+        },
+        {
+            "feature": "Compare",
+            "where": "\"Compare with...\" in the toolbar (from level 2)",
+            "description": "Shows the current item and a sibling side by side, each with its own totals. Most useful when both sides have the same rows."
+        },
+        {
+            "feature": "Progress bars and state labels",
+            "where": "Automatic by column name (see formats and states); Chart settings > Column format",
+            "description": "Percentages as progress bars; state codes as coloured, translated labels. Values match states ignoring case and spaces, and by aliases."
+        },
+        {
+            "feature": "Dates",
+            "where": "Automatic",
+            "description": "Unix timestamps and dates written as text by the SQL (d/m/Y, Y-m-d, with or without time) are dates: From/To filters, sorted by date, time shown when present."
+        },
+        {
+            "feature": "Charts with long labels",
+            "where": "Automatic",
+            "description": "Long category names are cut with ... (or wrapped when there are few bars); the tooltip shows the full name."
+        },
+        {
+            "feature": "Data freshness",
+            "where": "Live data / Cached pill (i) in the toolbar",
+            "description": "Live = calculated now; Cached = a recent snapshot (cache minutes in the report form; default for new reports and showing the pill: plugin settings > General)."
+        },
+        {
+            "feature": "Downloads and print",
+            "where": "Download icons and Print report under the report (formats chosen in the report form > Downloads and print)",
+            "description": "Downloads export the level on screen with its search, filters, calculated columns and the column order of the viewer (all rows, not just the page), and end with the totals row and the KPI cards on screen. PDF is like the print: title, level, period, KPI cards, the chart and the table with progress bars and state colours. PNG downloads the chart as drawn. Print shows title, level, chart, table and totals only."
+        },
+        {
+            "feature": "SQL Inspector",
+            "where": "SQL side panel",
+            "description": "One pill per level, + Add level, Validate and save (the SQL is checked on the server), Delete (only the deepest level, with confirmation). Hints explain %%PREVIOUSVALUE%% and %%MYCOURSES%% when used."
+        },
+        {
+            "feature": "AI assistant",
+            "where": "Bottom of the SQL panel",
+            "description": "The SQL panel offers an AGENTS.md of the report (its levels, placeholders and rules, no user data) to copy or download and paste into any AI chat; it returns one query per level to paste into the editor. An AI assistant inside the SQL Inspector comes with Reportium Pro (a separate plugin; plugin settings > AI assistant shows it as coming soon)."
+        },
+        {
+            "feature": "New SQL report",
+            "where": "Reports manager > Add report",
+            "description": "After saving the form, the report opens with the SQL panel on level 1 to write its SQL (no Custom SQL tab any more)."
+        },
+        {
+            "feature": "Who can view a report",
+            "where": "Reports manager > Roles column (chips, like the Participants roles)",
+            "description": "Default role: Manager. A viewer must hold one of the roles (any context for site reports, the course for course reports); report managers and the owner always can. A hidden report is only for report managers."
+        },
+        {
+            "feature": "Rows each viewer sees",
+            "where": "SQL of a level",
+            "description": "Use %%MYCOURSES%% (and %%USERID%%) in the SQL: one report shows each user only their own courses, at every level."
+        },
+        {
+            "feature": "Reports manager",
+            "where": "All reports",
+            "description": "A search box (name, course, owner) and two collapsible groups: Reportium default (ready-made templates, no Add report) and Reportium custom (your reports, Add report). Columns: Levels (n), Course (when some report belongs to a course), Roles, Chart types, Owner, actions (settings, delete, hide, duplicate, report file), downloads."
+        },
+        {
+            "feature": "Ready-made templates",
+            "where": "Installed with the plugin and on upgrade (db/install.php, db/upgrade.php)",
+            "description": "Drill-down reports for completion, learner progress, course activity and site activity (logs, down to each event and its details), who did what to whom, daily activity, logins and access, inactivity, forums, content, roles, enrolment methods, grades, badges, files, ungraded and overdue assignments, quizzes, groups, cohorts and course health. A copy of a template becomes a custom report."
+        },
+        {
+            "feature": "Report files",
+            "where": "Reports manager > Import",
+            "description": "Report files (.reportium.json, with levels, chart settings and roles) move reports between sites; XML files of SQL reports are imported too, with their SQL as level 1."
+        },
+        {
+            "feature": "Report navigation",
+            "where": "Top of a report and of the Reports manager, for users who can edit reports",
+            "description": "Report (view), Settings (name, description, exports, chart types, cache...) and All reports; on the Reports manager, the plugin settings for administrators."
+        },
+        {
+            "feature": "Grades up to date",
+            "where": "Plugin settings > General > Grades",
+            "description": "A scheduled task recalculates the courses whose gradebook needs it (Moodle only does it when the gradebook is opened), so reports on grades show current totals. Course completion is recalculated by Moodle every minute."
+        },
+        {
+            "feature": "Plugin settings",
+            "where": "Site administration > Plugins > Local plugins > Reportium settings",
+            "description": "Tabs: General (row limit, links to Moodle, slow query warning, data freshness, grades task; the First setup tour), Column formats (progress and state words, progress colours, states) and AI assistant (Reportium Pro option and the instructions file for any AI chat)."
+        },
+        {
+            "feature": "Period of the data",
+            "where": "Toolbar, calendar selector (reports whose SQL uses %%STARTTIME%% / %%ENDTIME%%); default in the report form (Period)",
+            "description": "Presets relative to today (last 30 days, last month...) or custom dates, in the timezone of the viewer. The period applies to every level, downloads and scheduled emails, and stays in the URL (rrange, rfrom, rto). Log reports filter by period and open on the last 30 days."
+        },
+        {
+            "feature": "Compare with the previous period",
+            "where": "Toolbar checkbox next to the period",
+            "description": "A second pane shows the same level for the period just before (the previous calendar month, quarter or year for those presets; otherwise the same number of days before)."
+        },
+        {
+            "feature": "SQL history",
+            "where": "SQL Inspector > History",
+            "description": "Every save, delete and restore of the SQL of a level keeps a version (the last 50 per level) and is logged as a Moodle event. A version can be compared with the editor (Changes), loaded into the editor, or restored; a deleted level comes back by restoring one of its versions as the next level."
+        },
+        {
+            "feature": "Scheduled emails",
+            "where": "Report navigation > Scheduled emails, or \"Schedule email\" under the report (sends the view on screen)",
+            "description": "Each schedule emails one view (level chosen by name, the row of each level above, search, filters, sort) as a file with the data its creator can see, for a period relative to each sending, daily, weekly, monthly or quarterly at a chosen hour. PDF files are like the print, with the chart chosen in the form (as in the report, bars, lines, pie or none) drawn on the server. Subject and message take placeholders replaced for each recipient: %firstname%, %lastname%, %fullname%, %username%, %email%, %reportname%, %period%, %rows%, %date%, %link%, %linkchart% (this view of the report), %sitename%. Recipients: users, cohorts, roles of the course of the report, and external addresses. Send now, pause, delivery log. Capability local/reportium:schedule."
+        },
+        {
+            "feature": "Links to Moodle",
+            "where": "Report tables (automatic); switch in the plugin settings > General",
+            "description": "A name column next to the id of what it names links to Moodle in a new tab, without drilling down: userid + fullname/learner/student/teacher/user (profile, in the course of the row when it has courseid), courseid + course/coursename/fullname/name (course), categoryid + category (category). Without those id columns the id column is used when the name is unambiguous: course, category, or fullname next to email. To get links, keep the id column in the SELECT with one of these aliases."
+        },
+        {
+            "feature": "KPI cards and totals row",
+            "where": "Above the chart and under the table. Report defaults (cards, rows card, totals row) in Edit > KPI cards and totals; the calculation of each column, and changes per level, in Chart settings > KPI cards",
+            "description": "Each column can have a calculation: total, average, minimum, maximum (earliest/latest for dates), count or distinct values (e.g. distinct users). The chosen calculations are shown as cards above the chart and, optionally, in a totals row under the table over every visible row; plus an optional rows card. Nothing chosen: the rows and the metrics of the chart (averaged for percentages and averages, totalled otherwise). They follow search and filters; with \"Compare with the previous period\" the cards show the change in %. Cards can be switched off per level."
+        },
+        {
+            "feature": "Alerts",
+            "where": "Scheduled emails > Send only if",
+            "description": "A schedule can be sent only when its condition is met at the time of sending: always, the view has rows, or a value meets a threshold (column, calculation, comparison and number, e.g. \"Average of Completion < 50\"). Otherwise nothing is sent and the delivery log shows Skipped with the value calculated."
+        },
+        {
+            "feature": "Calculated columns",
+            "where": "The \"+\" strip on the right of a table; the calculator icon of a calculated column edits it",
+            "description": "A column made from a formula over the columns of the row, without SQL: numbers, [column] (key or label), + - * / ( ) and round(x, decimals), abs, min, max, pct(part, total). Shown as a number or a progress bar. Apply = for now (URL); Save = default of the level. Calculated columns work in charts, filters, sorting, KPI cards, downloads, PDF and alerts. Nothing is executed: the formula is parsed and calculated row by row."
+        },
+        {
+            "feature": "Column order",
+            "where": "Drag a table header onto another",
+            "description": "Each user keeps their own column order per report and level (a user preference); downloads follow it. Chart settings > Table > Reset the column order."
+        },
+        {
+            "feature": "Links to the level below",
+            "where": "SQL of levels 2 and below",
+            "description": "Every level under the first must use the row clicked above (%%PREVIOUSVALUE%%, or %%LEVELVALUE:n%% for any level above): saving a level without it is refused, as every row would open the same list."
+        },
+        {
+            "feature": "First setup",
+            "where": "Site administration > Plugins > Local plugins > First setup, the tour card of the plugin settings, and a notice on the reports page until it is finished",
+            "description": "Steps: welcome, ready-made reports to show, roles that see them, scheduled emails check (SMTP, divert, cron, test email), AI assistant, done. It can be opened again at any time."
+        },
+        {
+            "feature": "Extension points",
+            "where": "Other plugins (e.g. Reportium Pro)",
+            "description": "A plugin with the callback {component}_reportium_sql_assistant($report, $context, $courseid) in its lib.php adds an assistant to the SQL Inspector: it returns the AMD module that draws it and its settings."
+        }
+    ]
+}

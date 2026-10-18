@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/reportium/db" VERSION="20261010" COMMENT="Reportium: reports, their drill-down levels and the roles that can see them"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="local_reportium" COMMENT="Reportium reports">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="Course the report belongs to (site id: site report)"/>
+        <FIELD NAME="ownerid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="User who created the report"/>
+        <FIELD NAME="visible" TYPE="int" LENGTH="4" NOTNULL="true" SEQUENCE="false" COMMENT="1 shown, 0 hidden"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="128" NOTNULL="true" SEQUENCE="false" COMMENT="Name of the report"/>
+        <FIELD NAME="summary" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Description shown above the report"/>
+        <FIELD NAME="summaryformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Text format of the summary"/>
+        <FIELD NAME="export" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Download formats offered (comma list of Moodle data formats)"/>
+        <FIELD NAME="global" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1: the report can run inside any course, with the data of that course"/>
+        <FIELD NAME="displaytotalrecords" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="1: show the row count of each level"/>
+        <FIELD NAME="displayprintbutton" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="1" SEQUENCE="false" COMMENT="1: offer the print button"/>
+        <FIELD NAME="daterange" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Period shown first when the SQL uses %%STARTTIME%% / %%ENDTIME%% (date_range presets); empty = all time"/>
+        <FIELD NAME="kpicards" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1: KPI cards above the chart (levels may change it); off for new reports"/>
+        <FIELD NAME="kpirows" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1: a card with the number of rows"/>
+        <FIELD NAME="totalsrow" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1: totals row under the table"/>
+        <FIELD NAME="views" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Chart types offered (comma list of bar, pie, line, table); empty = all"/>
+        <FIELD NAME="template" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" COMMENT="Key of the ready-made template this report was installed from (Reportium default); empty for reports made by users (Reportium custom)"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_reportium_level" COMMENT="Custom SQL queries per report and drill-down level">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="reportid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="drilllevel" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0=root, 1=first drilldown, 2=second, etc."/>
+        <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Human-readable label for this level"/>
+        <FIELD NAME="sqlquery" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="config" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON: chart mapping overrides (labelcolumn, valuecolumn, metrics, defaultview, title, sort, limit, stacked)"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_reportid" TYPE="foreign" FIELDS="reportid" REFTABLE="local_reportium" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="reportid_drilllevel" UNIQUE="true" FIELDS="reportid, drilllevel"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_reportium_role" COMMENT="Roles allowed to view a report (empty = the report's default permissions)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="reportid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="roleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_reportid" TYPE="foreign" FIELDS="reportid" REFTABLE="local_reportium" REFFIELDS="id"/>
+        <KEY NAME="fk_roleid" TYPE="foreign" FIELDS="roleid" REFTABLE="role" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="reportid_roleid" UNIQUE="true" FIELDS="reportid, roleid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_reportium_version" COMMENT="Every saved version of the SQL of a level (history, restore, audit)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="reportid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="drilllevel" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0 = level 1"/>
+        <FIELD NAME="label" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="sqlquery" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="action" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="saved, deleted or restored"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_reportid" TYPE="foreign" FIELDS="reportid" REFTABLE="local_reportium" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="reportid_drilllevel" UNIQUE="false" FIELDS="reportid, drilllevel"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_reportium_schedule" COMMENT="Scheduled email delivery of a report view">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="reportid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Who created it: the report runs with this user's access"/>
+        <FIELD NAME="recipients" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON: users, cohorts, roles (ids) and emails"/>
+        <FIELD NAME="frequency" TYPE="char" LENGTH="10" NOTNULL="true" DEFAULT="weekly" SEQUENCE="false" COMMENT="daily, weekly, monthly or quarterly"/>
+        <FIELD NAME="weekday" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="0 Sunday .. 6 Saturday (weekly)"/>
+        <FIELD NAME="monthday" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="1..28 (monthly, quarterly)"/>
+        <FIELD NAME="hour" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="8" SEQUENCE="false" COMMENT="0..23, in the timezone of the creator"/>
+        <FIELD NAME="format" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="excel" SEQUENCE="false" COMMENT="Moodle data format"/>
+        <FIELD NAME="viewstate" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON: level, path, search, filters, sort of the view sent"/>
+        <FIELD NAME="daterange" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="Period of the data (date_range presets, relative to the sending time)"/>
+        <FIELD NAME="sendcondition" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="JSON: when to send (empty = always): {type: rows} or {type: value, column, agg, op, value}"/>
+        <FIELD NAME="subject" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+        <FIELD NAME="nextrun" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="lastrun" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_reportid" TYPE="foreign" FIELDS="reportid" REFTABLE="local_reportium" REFFIELDS="id"/>
+        <KEY NAME="fk_userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="enabled_nextrun" UNIQUE="false" FIELDS="enabled, nextrun"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_reportium_sendlog" COMMENT="Deliveries of scheduled reports">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="scheduleid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timesent" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="sent, empty or error"/>
+        <FIELD NAME="recipients" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="rowcount" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="error" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="fk_scheduleid" TYPE="foreign" FIELDS="scheduleid" REFTABLE="local_reportium_schedule" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
