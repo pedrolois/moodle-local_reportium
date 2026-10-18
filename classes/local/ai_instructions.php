@@ -27,7 +27,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class ai_instructions {
-
     /**
      * Instructions file (Markdown, like an AGENTS.md) to paste into any AI chat (ChatGPT, Codex, Claude...) when
      * the site has no AI provider: what to do and return, the SQL of every level, the placeholders and rules.
@@ -51,8 +50,10 @@ class ai_instructions {
         }
         $summary = '';
         if ($report) {
-            [$summary, $count] = self::redact(trim(html_to_text(format_text((string) $report->summary,
-                (int) $report->summaryformat), 0, false)));
+            [$summary, $count] = self::redact(trim(html_to_text(format_text(
+                (string) $report->summary,
+                (int) $report->summaryformat
+            ), 0, false)));
             $replaced += $count;
         }
         $lines = [
@@ -158,7 +159,7 @@ class ai_instructions {
     /**
      * File name of the instructions file of a report.
      *
-     * @param stdClass $report
+     * @param stdClass|null $report null = the file without a report
      * @return string
      */
     public static function prompt_filename(?stdClass $report): string {

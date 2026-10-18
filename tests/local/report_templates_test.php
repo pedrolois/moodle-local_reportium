@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\report_templates
  */
 final class report_templates_test extends \advanced_testcase {
-
     /**
      * A small site: a category with a course, a student, a forum post, a log entry and a graded item.
      */
@@ -41,7 +40,8 @@ final class report_templates_test extends \advanced_testcase {
         $gen->enrol_user($student->id, $course->id, 'student');
         $forum = $gen->create_module('forum', ['course' => $course->id]);
         $gen->get_plugin_generator('mod_forum')->create_discussion(
-            ['course' => $course->id, 'forum' => $forum->id, 'userid' => $student->id]);
+            ['course' => $course->id, 'forum' => $forum->id, 'userid' => $student->id]
+        );
         $assign = $gen->create_module('assign', ['course' => $course->id, 'grade' => 100]);
         $item = \grade_item::fetch(['itemtype' => 'mod', 'itemmodule' => 'assign', 'iteminstance' => $assign->id,
             'courseid' => $course->id]);
@@ -61,8 +61,10 @@ final class report_templates_test extends \advanced_testcase {
             $reportid = report_templates::install($key, SITEID, (int) $USER->id);
             $report = $DB->get_record('local_reportium', ['id' => $reportid], '*', MUST_EXIST);
             $this->assertSame(get_string('template_' . $key . '_name', 'local_reportium'), $report->name);
-            $this->assertEquals(count($definition['levels']),
-                $DB->count_records('local_reportium_level', ['reportid' => $reportid]));
+            $this->assertEquals(
+                count($definition['levels']),
+                $DB->count_records('local_reportium_level', ['reportid' => $reportid])
+            );
 
             $path = [];
             foreach (array_keys($definition['levels']) as $level) {
@@ -87,8 +89,10 @@ final class report_templates_test extends \advanced_testcase {
     public function test_completion_template_drills_by_id(): void {
         global $DB, $USER;
         $context = \context_system::instance();
-        $report = $DB->get_record('local_reportium',
-            ['id' => report_templates::install('completion', SITEID, (int) $USER->id)]);
+        $report = $DB->get_record(
+            'local_reportium',
+            ['id' => report_templates::install('completion', SITEID, (int) $USER->id)]
+        );
         $cat = $DB->get_record('course_categories', ['name' => 'Template Cat']);
 
         $root = level_service::get_level_payload($report, 0, [], $context, (int) $USER->id);
@@ -97,8 +101,13 @@ final class report_templates_test extends \advanced_testcase {
         $this->assertSame(['Template Course'], array_column($courses['rows'], 'course'));
         $this->assertSame('1', (string) $courses['rows'][0]['enrolled']);
 
-        $learners = level_service::get_level_payload($report, 2, [(string) $cat->id, (string) $courses['rows'][0]['id']],
-            $context, (int) $USER->id);
+        $learners = level_service::get_level_payload(
+            $report,
+            2,
+            [(string) $cat->id, (string) $courses['rows'][0]['id']],
+            $context,
+            (int) $USER->id
+        );
         $this->assertSame(['Sara Student'], array_column($learners['rows'], 'fullname'));
     }
 
@@ -111,15 +120,21 @@ final class report_templates_test extends \advanced_testcase {
         $count = count(report_templates::definitions()['siteactivity']['levels']);
         // An older install: without its last level, and with its first level changed by the user.
         $DB->delete_records('local_reportium_level', ['reportid' => $id, 'drilllevel' => $count - 1]);
-        $DB->set_field('local_reportium_level', 'sqlquery', 'SELECT id, username FROM {user}',
-            ['reportid' => $id, 'drilllevel' => 0]);
+        $DB->set_field(
+            'local_reportium_level',
+            'sqlquery',
+            'SELECT id, username FROM {user}',
+            ['reportid' => $id, 'drilllevel' => 0]
+        );
 
         $this->assertSame(1, report_templates::add_missing_levels());
         $levels = level_service::get_levels($id);
         $this->assertCount($count, $levels);
         $this->assertSame('SELECT id, username FROM {user}', $levels[0]['sqlquery']);
-        $this->assertSame(get_string('template_siteactivity_level' . ($count - 1), 'local_reportium'),
-            $levels[$count - 1]['label']);
+        $this->assertSame(
+            get_string('template_siteactivity_level' . ($count - 1), 'local_reportium'),
+            $levels[$count - 1]['label']
+        );
         // Nothing more to add.
         $this->assertSame(0, report_templates::add_missing_levels());
     }

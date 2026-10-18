@@ -29,7 +29,6 @@ require_once($CFG->libdir . '/adminlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class setting_colour extends \admin_setting_configcolourpicker {
-
     /**
      * Colour swatch input with the hexadecimal value next to it.
      *
@@ -44,8 +43,17 @@ class setting_colour extends \admin_setting_configcolourpicker {
                 'value' => $value, 'class' => 'form-control reportium-admin-color',
                 'oninput' => 'this.nextElementSibling.textContent = this.value']) .
             \html_writer::tag('code', s($value), ['class' => 'ml-2 ms-2']),
-            'd-flex align-items-center');
-        return format_admin_setting($this, $this->visiblename, $html, $this->description, true, '',
-            $this->get_defaultsetting(), $query);
+            'd-flex align-items-center'
+        );
+        return format_admin_setting(
+            $this,
+            $this->visiblename,
+            $html,
+            $this->description,
+            true,
+            '',
+            $this->get_defaultsetting(),
+            $query
+        );
     }
 }

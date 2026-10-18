@@ -29,7 +29,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class sql_history {
-
     /** @var string Table. */
     const TABLE = 'local_reportium_version';
 
@@ -130,8 +129,10 @@ class sql_history {
             $existing->usermodified = $userid;
             $DB->update_record(level_service::TABLE, $existing);
         } else {
-            $deepest = $DB->get_field_sql('SELECT MAX(drilllevel) FROM {' . level_service::TABLE . '} WHERE reportid = ?',
-                [$report->id]);
+            $deepest = $DB->get_field_sql(
+                'SELECT MAX(drilllevel) FROM {' . level_service::TABLE . '} WHERE reportid = ?',
+                [$report->id]
+            );
             $next = $deepest === null || $deepest === false ? 0 : (int) $deepest + 1;
             if ($level !== $next) {
                 throw new moodle_exception('cannotrestorelevel', 'local_reportium', '', $level + 1);

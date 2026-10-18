@@ -29,7 +29,6 @@ use core_external\external_api;
  * @covers     \local_reportium\local\ai_instructions
  */
 final class chat_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -41,14 +40,18 @@ final class chat_test extends \advanced_testcase {
     }
 
     public function test_prompt_file_for_an_ai_chat_outside_moodle(): void {
-        $result = external_api::clean_returnvalue(chat::prompt_file_returns(),
-            chat::prompt_file((int) $this->report->id, 0, 1));
+        $result = external_api::clean_returnvalue(
+            chat::prompt_file_returns(),
+            chat::prompt_file((int) $this->report->id, 0, 1)
+        );
         $this->assertSame('AGENTS-Demo-drill-report.md', $result['filename']);
         $content = $result['content'];
         $this->assertStringStartsWith('# Reportium report: Demo drill report', $content);
-        foreach (['## What to do', '## What to return', '## Rules for the SQL', '## The levels of this report',
+        foreach (
+            ['## What to do', '## What to return', '## Rules for the SQL', '## The levels of this report',
                 '### Level 1', '### Level 2 (the user is editing this level now)', '### Level 3', '%%PREVIOUSVALUE%%',
-                '%%LEVELVALUE:n%%', '%%MYCOURSES%%', '%%USERID%%', '%%WWWROOT%%', '%%STARTTIME%%', 'State codes'] as $part) {
+                '%%LEVELVALUE:n%%', '%%MYCOURSES%%', '%%USERID%%', '%%WWWROOT%%', '%%STARTTIME%%', 'State codes'] as $part
+        ) {
             $this->assertStringContainsString($part, $content);
         }
     }

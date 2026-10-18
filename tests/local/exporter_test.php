@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\exporter
  */
 final class exporter_test extends \advanced_testcase {
-
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();

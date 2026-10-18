@@ -26,7 +26,6 @@ namespace local_reportium\task;
  * @covers     \local_reportium\task\regrade_courses
  */
 final class regrade_courses_test extends \advanced_testcase {
-
     /**
      * A course with a grade item and a student graded, then marked as "needs update".
      *

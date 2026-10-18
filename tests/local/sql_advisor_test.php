@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\sql_advisor
  */
 final class sql_advisor_test extends \advanced_testcase {
-
     public function test_threshold(): void {
         $this->resetAfterTest();
         $this->assertSame(3000, sql_advisor::threshold_ms());

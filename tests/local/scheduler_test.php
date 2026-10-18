@@ -27,7 +27,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\task\send_scheduled
  */
 final class scheduler_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -37,8 +36,11 @@ final class scheduler_test extends \advanced_testcase {
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
         $this->report = $generator->create_report(['name' => 'Weekly report']);
-        $generator->create_level($this->report->id, 0,
-            "SELECT 1 AS id, 'Alpha' AS name, 3 AS n UNION ALL SELECT 2, 'Beta', %%STARTTIME%%");
+        $generator->create_level(
+            $this->report->id,
+            0,
+            "SELECT 1 AS id, 'Alpha' AS name, 3 AS n UNION ALL SELECT 2, 'Beta', %%STARTTIME%%"
+        );
     }
 
     /**
@@ -105,8 +107,10 @@ final class scheduler_test extends \advanced_testcase {
         $CFG->noemailever = false;
         $sink = $this->redirectEmails();
         $ana = $this->getDataGenerator()->create_user(['email' => 'ana@example.com']);
-        $schedule = $this->schedule(['users' => [$ana->id], 'emails' => ['outside@example.org']],
-            ['daterange' => 'lastmonth', 'message' => 'Hello team', 'format' => 'csv']);
+        $schedule = $this->schedule(
+            ['users' => [$ana->id], 'emails' => ['outside@example.org']],
+            ['daterange' => 'lastmonth', 'message' => 'Hello team', 'format' => 'csv']
+        );
         $log = scheduler::send($schedule);
         $this->assertSame('sent', $log->status, (string) $log->error);
         $this->assertSame(2, $log->recipients);

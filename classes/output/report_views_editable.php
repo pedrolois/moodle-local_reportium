@@ -29,7 +29,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_views_editable extends \core\output\inplace_editable {
-
     /** Every chart type, in toolbar order. */
     const VIEWS = ['bar', 'pie', 'line', 'table'];
 
@@ -46,8 +45,14 @@ class report_views_editable extends \core\output\inplace_editable {
             $this->viewnames[$view] = get_string('ui_' . $view, 'local_reportium');
         }
         $value = json_encode(self::chosen($report));
-        parent::__construct('local_reportium', 'report_views', (int) $report->id,
-            report_roles::can_edit($report), $value, $value);
+        parent::__construct(
+            'local_reportium',
+            'report_views',
+            (int) $report->id,
+            report_roles::can_edit($report),
+            $value,
+            $value
+        );
         $name = format_string($report->name, true, ['context' => report_roles::report_context($report)]);
         $this->edithint = get_string('reportviews_edit', 'local_reportium', $name);
         $this->editlabel = get_string('reportviews_edit', 'local_reportium', $name);
@@ -73,7 +78,7 @@ class report_views_editable extends \core\output\inplace_editable {
      */
     public function export_for_template(\renderer_base $output) {
         $views = (array) json_decode($this->value);
-        $names = array_map(function($view) {
+        $names = array_map(function ($view) {
             return $this->viewnames[$view] ?? $view;
         }, $views);
         $this->displayvalue = count($views) === count(self::VIEWS) ? get_string('reportviews_all', 'local_reportium')
@@ -93,12 +98,20 @@ class report_views_editable extends \core\output\inplace_editable {
         $report = $DB->get_record('local_reportium', ['id' => clean_param($itemid, PARAM_INT)], '*', MUST_EXIST);
         external_api::validate_context(report_roles::report_context($report));
         if (!report_roles::can_edit($report)) {
-            throw new \required_capability_exception(report_roles::report_context($report), 'local/reportium:manage',
-                'nopermissions', '');
+            throw new \required_capability_exception(
+                report_roles::report_context($report),
+                'local/reportium:manage',
+                'nopermissions',
+                ''
+            );
         }
         $views = array_values(array_intersect(self::VIEWS, (array) json_decode((string) $newvalue, true)));
-        $DB->set_field('local_reportium', 'views', $views && count($views) < count(self::VIEWS) ? implode(',', $views) : null,
-            ['id' => $report->id]);
+        $DB->set_field(
+            'local_reportium',
+            'views',
+            $views && count($views) < count(self::VIEWS) ? implode(',', $views) : null,
+            ['id' => $report->id]
+        );
         return new self($DB->get_record('local_reportium', ['id' => $report->id], '*', MUST_EXIST));
     }
 }

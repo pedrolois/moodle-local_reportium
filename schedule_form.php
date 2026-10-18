@@ -37,7 +37,6 @@ use local_reportium\local\report_roles;
  * @package    local_reportium
  */
 class schedule_form extends moodleform {
-
     /**
      * Form definition.
      */
@@ -52,8 +51,11 @@ class schedule_form extends moodleform {
         $mform->addElement('select', 'level', get_string('schedule_level', 'local_reportium'), $this->_customdata['levels']);
         $mform->addHelpButton('level', 'schedule_level', 'local_reportium');
         // The row of each level before the chosen one (e.g. which category, then which course): schedule_form.js.
-        $mform->addElement('static', 'schedulepath', '', html_writer::div('', 'reportium-schedule-path',
-            ['data-region' => 'schedule-path']));
+        $mform->addElement('static', 'schedulepath', '', html_writer::div(
+            '',
+            'reportium-schedule-path',
+            ['data-region' => 'schedule-path']
+        ));
         $mform->addElement('select', 'daterange', get_string('daterange', 'local_reportium'), date_range::options(false));
         $mform->addHelpButton('daterange', 'schedule_daterange', 'local_reportium');
         $mform->setDefault('daterange', (string) ($report->daterange ?? ''));
@@ -77,8 +79,12 @@ class schedule_form extends moodleform {
         ]);
         $mform->addHelpButton('condtype', 'schedule_cond', 'local_reportium');
         // The columns of the chosen level: schedule_form.js (kept in the hidden condcolumn).
-        $mform->addElement('static', 'condcolumnregion', get_string('schedule_cond_column', 'local_reportium'),
-            html_writer::div('', 'reportium-schedule-condcolumn', ['data-region' => 'cond-column']));
+        $mform->addElement(
+            'static',
+            'condcolumnregion',
+            get_string('schedule_cond_column', 'local_reportium'),
+            html_writer::div('', 'reportium-schedule-condcolumn', ['data-region' => 'cond-column'])
+        );
         $mform->addElement('hidden', 'condcolumn', '');
         $mform->setType('condcolumn', PARAM_RAW_TRIMMED);
         $mform->addElement('hidden', 'condcolumnlabel', '');
@@ -90,8 +96,12 @@ class schedule_form extends moodleform {
         $mform->addElement('select', 'condagg', get_string('schedule_cond_agg', 'local_reportium'), $aggs);
         $mform->setDefault('condagg', 'avg');
         $mform->hideIf('condagg', 'condtype', 'neq', 'value');
-        $mform->addElement('select', 'condop', get_string('schedule_cond_op', 'local_reportium'),
-            \local_reportium\local\scheduler::OPERATORS);
+        $mform->addElement(
+            'select',
+            'condop',
+            get_string('schedule_cond_op', 'local_reportium'),
+            \local_reportium\local\scheduler::OPERATORS
+        );
         $mform->setDefault('condop', 'lt');
         $mform->hideIf('condop', 'condtype', 'neq', 'value');
         $mform->addElement('text', 'condvalue', get_string('schedule_cond_number', 'local_reportium'), ['size' => 10]);
@@ -109,14 +119,20 @@ class schedule_form extends moodleform {
         $mform->setDefault('frequency', 'weekly');
         $weekdays = [];
         foreach ([1, 2, 3, 4, 5, 6, 0] as $day) {
-            $weekdays[$day] = get_string(['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][$day],
-                'calendar');
+            $weekdays[$day] = get_string(
+                ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][$day],
+                'calendar'
+            );
         }
         $mform->addElement('select', 'weekday', get_string('schedule_weekday', 'local_reportium'), $weekdays);
         $mform->setDefault('weekday', 1);
         $mform->hideIf('weekday', 'frequency', 'neq', 'weekly');
-        $mform->addElement('select', 'monthday', get_string('schedule_monthday', 'local_reportium'),
-            array_combine(range(1, 28), range(1, 28)));
+        $mform->addElement(
+            'select',
+            'monthday',
+            get_string('schedule_monthday', 'local_reportium'),
+            array_combine(range(1, 28), range(1, 28))
+        );
         $mform->hideIf('monthday', 'frequency', 'in', ['daily', 'weekly']);
         $mform->addHelpButton('monthday', 'schedule_monthday', 'local_reportium');
         $hours = [];
@@ -125,8 +141,12 @@ class schedule_form extends moodleform {
         }
         $mform->addElement('select', 'hour', get_string('schedule_hour', 'local_reportium'), $hours);
         $mform->setDefault('hour', 8);
-        $mform->addElement('advcheckbox', 'enabled', get_string('schedule_enabled', 'local_reportium'),
-            get_string('schedule_enabled_desc', 'local_reportium'));
+        $mform->addElement(
+            'advcheckbox',
+            'enabled',
+            get_string('schedule_enabled', 'local_reportium'),
+            get_string('schedule_enabled_desc', 'local_reportium')
+        );
         $mform->setDefault('enabled', 1);
 
         // To whom.
@@ -135,7 +155,7 @@ class schedule_form extends moodleform {
         $mform->addElement('autocomplete', 'users', get_string('schedule_users', 'local_reportium'), [], [
             'multiple' => true,
             'ajax' => 'core_user/form_user_selector',
-            'valuehtmlcallback' => static function($userid) {
+            'valuehtmlcallback' => static function ($userid) {
                 global $DB;
                 $user = $DB->get_record('user', ['id' => (int) $userid, 'deleted' => 0]);
                 return $user ? fullname($user) . ' (' . s($user->email) . ')' : false;
@@ -145,10 +165,20 @@ class schedule_form extends moodleform {
         foreach (cohort_get_available_cohorts($context, COHORT_ALL, 0, 0) as $cohort) {
             $cohorts[$cohort->id] = format_string($cohort->name, true, ['context' => $context]);
         }
-        $mform->addElement('autocomplete', 'cohorts', get_string('schedule_cohorts', 'local_reportium'), $cohorts,
-            ['multiple' => true]);
-        $mform->addElement('autocomplete', 'roles', get_string('schedule_roles', 'local_reportium'),
-            report_roles::options($context), ['multiple' => true]);
+        $mform->addElement(
+            'autocomplete',
+            'cohorts',
+            get_string('schedule_cohorts', 'local_reportium'),
+            $cohorts,
+            ['multiple' => true]
+        );
+        $mform->addElement(
+            'autocomplete',
+            'roles',
+            get_string('schedule_roles', 'local_reportium'),
+            report_roles::options($context),
+            ['multiple' => true]
+        );
         $mform->addHelpButton('roles', 'schedule_roles', 'local_reportium');
         $mform->addElement('textarea', 'emails', get_string('schedule_emails', 'local_reportium'), ['rows' => 3, 'cols' => 60]);
         $mform->setType('emails', PARAM_RAW_TRIMMED);
@@ -159,8 +189,12 @@ class schedule_form extends moodleform {
         $mform->addElement('text', 'subject', get_string('schedule_subjectfield', 'local_reportium'), ['size' => 60]);
         $mform->setType('subject', PARAM_TEXT);
         $mform->addHelpButton('subject', 'schedule_subjectfield', 'local_reportium');
-        $mform->addElement('textarea', 'message', get_string('schedule_messagefield', 'local_reportium'),
-            ['rows' => 4, 'cols' => 60]);
+        $mform->addElement(
+            'textarea',
+            'message',
+            get_string('schedule_messagefield', 'local_reportium'),
+            ['rows' => 4, 'cols' => 60]
+        );
         $mform->setType('message', PARAM_TEXT);
         $mform->setDefault('message', get_string('schedule_message_example', 'local_reportium'));
         // The placeholders, each with what it becomes.
@@ -169,9 +203,13 @@ class schedule_form extends moodleform {
             $items .= html_writer::tag('li', html_writer::tag('code', '%' . $name . '%') . ' ' .
                 get_string('schedule_ph_' . $name, 'local_reportium'));
         }
-        $mform->addElement('static', 'placeholders', get_string('schedule_placeholders', 'local_reportium'),
+        $mform->addElement(
+            'static',
+            'placeholders',
+            get_string('schedule_placeholders', 'local_reportium'),
             html_writer::div(get_string('schedule_placeholders_desc', 'local_reportium'), 'small text-muted') .
-            html_writer::tag('ul', $items, ['class' => 'reportium-placeholders small']));
+            html_writer::tag('ul', $items, ['class' => 'reportium-placeholders small'])
+        );
 
         $mform->addElement('hidden', 'id', $report->id);
         $mform->setType('id', PARAM_INT);
@@ -201,8 +239,10 @@ class schedule_form extends moodleform {
         }
         // Every level before the chosen one needs its row.
         $view = json_decode((string) ($data['viewstate'] ?? ''), true);
-        $steps = array_filter((array) ($view['steps'] ?? []),
-            static fn($step) => is_array($step) && (string) ($step['v'] ?? '') !== '');
+        $steps = array_filter(
+            (array) ($view['steps'] ?? []),
+            static fn($step) => is_array($step) && (string) ($step['v'] ?? '') !== ''
+        );
         if ((int) ($data['level'] ?? 0) > count($steps)) {
             $errors['level'] = get_string('schedule_pathrequired', 'local_reportium');
         }

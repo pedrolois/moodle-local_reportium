@@ -27,7 +27,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\ai_instructions
  */
 final class ai_instructions_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -60,8 +59,10 @@ final class ai_instructions_test extends \advanced_testcase {
         $this->assertStringContainsString("'192.0.2.1'", $redacted);
         $this->assertStringContainsString("'REDACTED'", $redacted);
         // Ordinary SQL is left alone.
-        $this->assertSame([ 'SELECT c.id, c.fullname FROM {course} c WHERE c.id > 1', 0],
-            ai_instructions::redact('SELECT c.id, c.fullname FROM {course} c WHERE c.id > 1'));
+        $this->assertSame(
+            [ 'SELECT c.id, c.fullname FROM {course} c WHERE c.id > 1', 0],
+            ai_instructions::redact('SELECT c.id, c.fullname FROM {course} c WHERE c.id > 1')
+        );
 
         // In the file: the SQL is redacted, a note says so, and the address of the site is not there.
         $DB->set_field('local_reportium_level', 'sqlquery', $sql, ['reportid' => $this->report->id, 'drilllevel' => 0]);

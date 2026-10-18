@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\column_inspector
  */
 final class column_dates_test extends \advanced_testcase {
-
     public function test_parse_text_date(): void {
         $this->resetAfterTest();
         $this->setTimezone('Europe/Madrid');
@@ -68,8 +67,10 @@ final class column_dates_test extends \advanced_testcase {
         $this->resetAfterTest();
         $this->assertSame('Completion pct', column_inspector::humanise('completion_pct'));
         $this->assertSame('Learning path', column_inspector::humanise('learning_path'));
-        $columns = column_inspector::describe(['id', 'course_status', 'progress_pct', 'timecreated'],
-            [['id' => '1', 'course_status' => 'completed', 'progress_pct' => '50', 'timecreated' => '1767225600']]);
+        $columns = column_inspector::describe(
+            ['id', 'course_status', 'progress_pct', 'timecreated'],
+            [['id' => '1', 'course_status' => 'completed', 'progress_pct' => '50', 'timecreated' => '1767225600']]
+        );
         $bykey = array_column($columns, null, 'key');
         $this->assertSame('id', $bykey['id']['type']);
         $this->assertSame('state', $bykey['course_status']['format']);

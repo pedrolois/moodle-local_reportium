@@ -26,7 +26,6 @@ namespace local_reportium\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class level_saved extends \core\event\base {
-
     /** @var string Verb of the description. */
     protected const VERB = 'saved the SQL of';
 

@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\report_transfer
  */
 final class report_transfer_test extends \advanced_testcase {
-
     public function test_export_and_import(): void {
         global $DB;
         $this->resetAfterTest();
@@ -53,8 +52,10 @@ final class report_transfer_test extends \advanced_testcase {
         $this->assertSame([$teacher], report_roles::get($newid));
         $this->assertSame('15', get_config('local_reportium', 'cachettlminutes_report_' . $newid));
         $levels = level_service::get_levels($newid);
-        $this->assertSame(array_column(level_service::get_levels((int) $report->id), 'sqlquery'),
-            array_column($levels, 'sqlquery'));
+        $this->assertSame(
+            array_column(level_service::get_levels((int) $report->id), 'sqlquery'),
+            array_column($levels, 'sqlquery')
+        );
         $this->assertSame('table', $levels[1]['config']['defaultview']);
     }
 
@@ -70,8 +71,11 @@ final class report_transfer_test extends \advanced_testcase {
         $this->assertCount(1, $levels);
         $this->assertSame('SELECT id, fullname FROM {course}', $levels[0]['sqlquery']);
         // The xls format becomes Excel; formats Moodle has no data format for are dropped.
-        $export = explode(',', trim(\core\di::get(\moodle_database::class)->get_field('local_reportium', 'export',
-            ['id' => $id]), ','));
+        $export = explode(',', trim(\core\di::get(\moodle_database::class)->get_field(
+            'local_reportium',
+            'export',
+            ['id' => $id]
+        ), ','));
         $this->assertContains('csv', $export);
         $this->assertContains('excel', $export);
         $this->assertNotContains('slk', $export);
@@ -81,8 +85,10 @@ final class report_transfer_test extends \advanced_testcase {
 
     public function test_bad_files_are_refused(): void {
         $this->resetAfterTest();
-        foreach (['not a report', '{"format":"other"}', '<report><name>x</name></report>',
-                '<report version="1"><name>x</name><type>sql</type></report>'] as $content) {
+        foreach (
+            ['not a report', '{"format":"other"}', '<report><name>x</name></report>',
+                '<report version="1"><name>x</name><type>sql</type></report>'] as $content
+        ) {
             try {
                 report_transfer::import($content, SITEID, 2);
                 $this->fail('Accepted: ' . $content);
@@ -109,8 +115,10 @@ final class report_transfer_test extends \advanced_testcase {
         $ids = report_transfer::import_many($file, SITEID, (int) get_admin()->id);
         $this->assertCount(2, $ids);
         $this->assertSame($before + 2, $DB->count_records('local_reportium'));
-        $this->assertSame(array_column(level_service::get_levels((int) $demo->id), 'sqlquery'),
-            array_column(level_service::get_levels($ids[0]), 'sqlquery'));
+        $this->assertSame(
+            array_column(level_service::get_levels((int) $demo->id), 'sqlquery'),
+            array_column(level_service::get_levels($ids[0]), 'sqlquery')
+        );
         // A file of one report is imported too.
         $this->assertCount(1, report_transfer::import_many(report_transfer::export($demo), SITEID, 2));
     }

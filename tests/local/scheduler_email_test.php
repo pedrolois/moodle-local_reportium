@@ -30,7 +30,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\exporter
  */
 final class scheduler_email_test extends \advanced_testcase {
-
     /** @var \stdClass report: level 1 courses (Alpha, Beta, Gamma), level 2 the items of a course */
     private $report;
 
@@ -48,10 +47,17 @@ final class scheduler_email_test extends \advanced_testcase {
         $this->sink = $this->redirectEmails();
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
         $this->report = $generator->create_report(['name' => 'Course summary']);
-        $generator->create_level($this->report->id, 0,
-            "SELECT 1 AS id, 'Alpha' AS course, 30 AS learners UNION ALL SELECT 2, 'Beta', 12 UNION ALL SELECT 3, 'Gamma', 7");
-        $generator->create_level($this->report->id, 1,
-            "SELECT 10 AS id, CONCAT('Item of ', %%PREVIOUSVALUE%%) AS item, %%STARTTIME%% AS period_start");
+        $generator->create_level(
+            $this->report->id,
+            0,
+            "SELECT 1 AS id, 'Alpha' AS course, 30 AS learners UNION ALL SELECT 2, 'Beta', 12 UNION ALL SELECT 3, 'Gamma', 7"
+        );
+        $generator->create_level(
+            $this->report->id,
+            1,
+            "SELECT 10 AS id, CONCAT('Item of ', t.v) AS item, %%STARTTIME%% AS period_start"
+            . " FROM (SELECT 2 AS v UNION ALL SELECT 3) t WHERE t.v = %%PREVIOUSVALUE%%"
+        );
     }
 
     protected function tearDown(): void {
@@ -151,8 +157,10 @@ final class scheduler_email_test extends \advanced_testcase {
         scheduler::send($this->schedule(['emails' => ['outside@example.org']], ['daterange' => 'lastmonth']));
         [$start, $end] = date_range::resolve('lastmonth', 0, 0, 0, \core_date::get_user_timezone_object(get_admin()));
         $this->assertSame('Course summary (' . date_range::label($start, $end) . ')', $this->sink->get_messages()[0]->subject);
-        $this->assertStringContainsString('Period: ' . date_range::label($start, $end),
-            $this->text($this->sink->get_messages()[0]));
+        $this->assertStringContainsString(
+            'Period: ' . date_range::label($start, $end),
+            $this->text($this->sink->get_messages()[0])
+        );
     }
 
     public function test_the_file_follows_the_format(): void {
@@ -176,8 +184,10 @@ final class scheduler_email_test extends \advanced_testcase {
 
     public function test_a_deeper_level_and_its_period_are_sent(): void {
         $view = ['level' => 1, 'steps' => [['v' => '2', 'l' => 'Beta']]];
-        $log = scheduler::send($this->schedule(['emails' => ['outside@example.org']],
-            ['viewstate' => json_encode($view), 'daterange' => 'last7']));
+        $log = scheduler::send($this->schedule(
+            ['emails' => ['outside@example.org']],
+            ['viewstate' => json_encode($view), 'daterange' => 'last7']
+        ));
         $this->assertSame('sent', $log->status, (string) $log->error);
         $files = $this->attachments($this->sink->get_messages()[0]);
         // The file is named after the path, and holds the level of the row chosen (Beta), for the period.
@@ -195,8 +205,10 @@ final class scheduler_email_test extends \advanced_testcase {
         $view = ['level' => 0, 'search' => 'a', 'filters' => ['learners' => ['min' => '10']], 'sort' => 'learners:asc'];
         $log = scheduler::send($this->schedule(['emails' => ['outside@example.org']], ['viewstate' => json_encode($view)]));
         $this->assertSame(2, $log->rowcount);
-        $lines = array_map('str_getcsv', array_filter(explode("\n",
-            trim($this->attachments($this->sink->get_messages()[0])['Course summary.csv']))));
+        $lines = array_map('str_getcsv', array_filter(explode(
+            "\n",
+            trim($this->attachments($this->sink->get_messages()[0])['Course summary.csv'])
+        )));
         $this->assertSame([['Beta', '12'], ['Alpha', '30']], array_slice($lines, 1));
     }
 
@@ -224,8 +236,10 @@ final class scheduler_email_test extends \advanced_testcase {
         $this->sink->clear();
         $log = scheduler::send($schedule);
         $this->assertSame('sent', $log->status, (string) $log->error);
-        $this->assertEqualsCanonicalizing(['teacher@example.com', 'member@example.com'],
-            array_column($this->sink->get_messages(), 'to'));
+        $this->assertEqualsCanonicalizing(
+            ['teacher@example.com', 'member@example.com'],
+            array_column($this->sink->get_messages(), 'to')
+        );
     }
 
     public function test_no_email_to_suspended_deleted_or_repeated_addresses(): void {
@@ -237,8 +251,10 @@ final class scheduler_email_test extends \advanced_testcase {
         $log = scheduler::send($this->schedule(['users' => [$ana->id, $suspended->id, $deleted->id],
             'emails' => ['ANA@example.com', 'not-an-address', 'outside@example.org']]));
         $this->assertSame(2, $log->recipients);
-        $this->assertEqualsCanonicalizing(['ana@example.com', 'outside@example.org'],
-            array_column($this->sink->get_messages(), 'to'));
+        $this->assertEqualsCanonicalizing(
+            ['ana@example.com', 'outside@example.org'],
+            array_column($this->sink->get_messages(), 'to')
+        );
     }
 
     public function test_nothing_is_sent_when_it_must_not_be(): void {
@@ -293,7 +309,9 @@ final class scheduler_email_test extends \advanced_testcase {
         $this->assertSame(scheduler::KEEP_LOG, $DB->count_records(scheduler::LOG, ['scheduleid' => $schedule->id]));
         // The newest delivery is kept, the oldest ones go.
         $this->assertGreaterThan(scheduler::KEEP_LOG + 3, (int) $DB->get_field_sql(
-            'SELECT MAX(timesent) FROM {' . scheduler::LOG . '} WHERE scheduleid = ?', [$schedule->id]));
+            'SELECT MAX(timesent) FROM {' . scheduler::LOG . '} WHERE scheduleid = ?',
+            [$schedule->id]
+        ));
         $this->assertFalse($DB->record_exists(scheduler::LOG, ['scheduleid' => $schedule->id, 'timesent' => 0]));
     }
 
@@ -303,8 +321,11 @@ final class scheduler_email_test extends \advanced_testcase {
         $ben = $this->getDataGenerator()->create_user(['email' => 'ben@example.com']);
         $theirs = $this->schedule(['emails' => ['outside@example.org']], ['userid' => $ana->id]);
         $sent = $this->schedule(['users' => [$ana->id, $ben->id]]);
-        $approved = new \core_privacy\local\request\approved_contextlist($ana, 'local_reportium',
-            [\context_user::instance($ana->id)->id]);
+        $approved = new \core_privacy\local\request\approved_contextlist(
+            $ana,
+            'local_reportium',
+            [\context_user::instance($ana->id)->id]
+        );
         \local_reportium\privacy\provider::delete_data_for_user($approved);
         $this->assertFalse($DB->record_exists(scheduler::TABLE, ['id' => $theirs->id]));
         $lists = scheduler::recipient_lists($DB->get_record(scheduler::TABLE, ['id' => $sent->id]));

@@ -29,7 +29,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_roles_editable extends \core\output\inplace_editable {
-
     /** @var string[] roleid => localised name */
     protected $rolenames = [];
 
@@ -80,13 +79,17 @@ class report_roles_editable extends \core\output\inplace_editable {
         $report = $DB->get_record('local_reportium', ['id' => clean_param($itemid, PARAM_INT)], '*', MUST_EXIST);
         external_api::validate_context(report_roles::report_context($report));
         if (!report_roles::can_share($report)) {
-            throw new \required_capability_exception(report_roles::report_context($report), 'local/reportium:share',
-                'nopermissions', '');
+            throw new \required_capability_exception(
+                report_roles::report_context($report),
+                'local/reportium:share',
+                'nopermissions',
+                ''
+            );
         }
         $options = report_roles::options(report_roles::report_context($report));
-        $roleids = array_filter(array_map(static function($roleid) {
+        $roleids = array_filter(array_map(static function ($roleid) {
             return clean_param($roleid, PARAM_INT);
-        }, (array) json_decode((string) $newvalue, true)), static function($roleid) use ($options) {
+        }, (array) json_decode((string) $newvalue, true)), static function ($roleid) use ($options) {
             return isset($options[$roleid]);
         });
         report_roles::set((int) $report->id, $roleids);

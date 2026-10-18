@@ -33,7 +33,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class level_service {
-
     /** @var string What a "?" inside a text of the SQL becomes while the query runs (see protect_literals()). */
     const QUESTIONMARK = '[[QUESTIONMARK]]';
 
@@ -116,8 +115,14 @@ class level_service {
      * @param int[] $range [start, end] of %%STARTTIME%% / %%ENDTIME%%; empty = all time
      * @return array ['level', 'title', 'columns', 'rows', 'mapping', 'hasnext', 'cachemeta']
      */
-    public static function get_level_payload(stdClass $report, int $level, array $path, context $context, int $userid,
-            array $range = []): array {
+    public static function get_level_payload(
+        stdClass $report,
+        int $level,
+        array $path,
+        context $context,
+        int $userid,
+        array $range = []
+    ): array {
         $levels = [];
         foreach (self::get_levels((int) $report->id) as $item) {
             $levels[$item['level']] = $item;
@@ -203,13 +208,18 @@ class level_service {
      * @param string $columnsort table header sort "column:asc" or "column:desc", applied last (after top N)
      * @return array visible rows
      */
-    public static function visible_rows(array $payload, string $search = '', array $filters = [], array $override = [],
-            string $columnsort = ''): array {
+    public static function visible_rows(
+        array $payload,
+        string $search = '',
+        array $filters = [],
+        array $override = [],
+        string $columnsort = ''
+    ): array {
         $columns = array_column($payload['columns'], null, 'key');
         $mapping = column_inspector::merge_mapping($payload['mapping'], $override, $payload['columns']);
         $query = \core_text::strtolower(trim($search));
 
-        $rows = array_values(array_filter($payload['rows'], static function(array $row) use ($columns, $query, $filters): bool {
+        $rows = array_values(array_filter($payload['rows'], static function (array $row) use ($columns, $query, $filters): bool {
             if ($query !== '') {
                 $match = false;
                 foreach ($row as $value) {
@@ -256,7 +266,7 @@ class level_service {
         if (isset($columns[$sortkey]) && in_array($sortdir, ['asc', 'desc'], true)) {
             $numeric = in_array($columns[$sortkey]['type'], ['number', 'date', 'id'], true);
             $direction = $sortdir === 'asc' ? 1 : -1;
-            usort($rows, static function(array $a, array $b) use ($sortkey, $numeric, $direction): int {
+            usort($rows, static function (array $a, array $b) use ($sortkey, $numeric, $direction): int {
                 $x = $a[$sortkey] ?? '';
                 $y = $b[$sortkey] ?? '';
                 $cmp = $numeric ? ((float) $x <=> (float) $y)
@@ -483,21 +493,26 @@ class level_service {
             "SELECT DISTINCT ctx.instanceid
                FROM {role_assignments} ra
                JOIN {context} ctx ON ctx.id = ra.contextid AND ctx.contextlevel = :courselevel
-              WHERE ra.userid = :userid", ['courselevel' => CONTEXT_COURSE, 'userid' => $userid])));
+              WHERE ra.userid = :userid",
+            ['courselevel' => CONTEXT_COURSE, 'userid' => $userid]
+        )));
         // Roles in a category context: every course of that category and its subcategories.
         $categories = $DB->get_records_sql(
             "SELECT DISTINCT cat.id, cat.path
                FROM {role_assignments} ra
                JOIN {context} ctx ON ctx.id = ra.contextid AND ctx.contextlevel = :catlevel
                JOIN {course_categories} cat ON cat.id = ctx.instanceid
-              WHERE ra.userid = :userid", ['catlevel' => CONTEXT_COURSECAT, 'userid' => $userid]);
+              WHERE ra.userid = :userid",
+            ['catlevel' => CONTEXT_COURSECAT, 'userid' => $userid]
+        );
         foreach ($categories as $category) {
             $courses = array_merge($courses, array_map('intval', $DB->get_fieldset_sql(
                 "SELECT c.id
                    FROM {course} c
                    JOIN {course_categories} cc ON cc.id = c.category
                   WHERE cc.id = :catid OR " . $DB->sql_like('cc.path', ':subpath'),
-                ['catid' => $category->id, 'subpath' => $category->path . '/%'])));
+                ['catid' => $category->id, 'subpath' => $category->path . '/%']
+            )));
         }
         return array_values(array_unique(array_diff($courses, [(int) SITEID])));
     }
@@ -522,58 +537,42 @@ class level_service {
             if (!array_key_exists($var, $vars)) {
                 continue;
             }
-            $sql = preg_replace_callback('/%%' . $keyword . '%%/', static function() use (&$params, &$counter, $vars, $var) {
-                $name = 'rpv' . $counter++;
-                $params[$name] = (int) $vars[$var];
-                return ':' . $name;
-            }, $sql);
+            // Integers go in as integer literals: a typed value on every database (PostgreSQL cannot tell the type
+            // of a parameter in the SELECT list or in "IS NULL").
+            $sql = str_replace('%%' . $keyword . '%%', (string) (int) $vars[$var], $sql);
         }
         if (array_key_exists('mycourses', $vars)) {
             // Used as "c.id IN (%%MYCOURSES%%)": a list of bound ids, every course, or none.
-            $sql = preg_replace_callback('/%%MYCOURSES%%/', static function() use (&$params, &$counter, $vars) {
+            $sql = preg_replace_callback('/%%MYCOURSES%%/', static function () use (&$params, &$counter, $vars) {
                 if ($vars['mycourses'] === null) {
                     return 'SELECT id FROM {course}';
                 }
                 if (!$vars['mycourses']) {
                     return '-1';
                 }
-                $names = [];
-                foreach ($vars['mycourses'] as $courseid) {
-                    $name = 'rpv' . $counter++;
-                    $params[$name] = (int) $courseid;
-                    $names[] = ':' . $name;
-                }
-                return implode(', ', $names);
+                return implode(', ', array_map(static fn($courseid) => (string) (int) $courseid, $vars['mycourses']));
             }, $sql);
         }
         $previous = $path ? (string) end($path) : '';
-        $bind = static function(array $m) use (&$params, &$counter, $path, $previous): string {
+        $bind = static function (array $m) use (&$params, &$counter, $path, $previous): string {
             $name = 'rpv' . $counter++;
             $params[$name] = isset($m[1]) && $m[1] !== '' ? (string) ($path[(int) $m[1]] ?? '') : $previous;
             return ':' . $name;
         };
         $sql = preg_replace_callback('/%%PREVIOUSVALUE%%|%%LEVELVALUE:(\d+)%%/', $bind, $sql);
         // Current time (unix timestamp), e.g. to tell overdue activities apart.
-        $sql = preg_replace_callback('/%%NOW%%/', static function() use (&$params, &$counter): string {
-            $name = 'rpv' . $counter++;
-            $params[$name] = time();
-            return ':' . $name;
-        }, $sql);
+        $sql = str_replace('%%NOW%%', (string) time(), $sql);
         // Site address, and the period of the data (all time when none is chosen).
         // The site address goes in as text: it is mostly written inside a quoted text of the SQL
         // ('<a href="%%WWWROOT%%/course/view.php?id=', ...), where a parameter cannot go. Outside quotes it becomes a
         // quoted text. It comes from config.php; quotes are doubled anyway.
-        $sql = preg_replace_callback('/%%WWWROOT%%/', static function(array $m) use ($CFG, &$sql): string {
+        $sql = preg_replace_callback('/%%WWWROOT%%/', static function (array $m) use ($CFG, &$sql): string {
             return str_replace("'", "''", $CFG->wwwroot);
         }, self::quote_outside_literals($sql, '%%WWWROOT%%'));
         $period = ['STARTTIME' => (int) ($vars['starttime'] ?? 0),
             'ENDTIME' => (int) ($vars['endtime'] ?? date_range::ALL_END)];
         foreach ($period as $keyword => $value) {
-            $sql = preg_replace_callback('/%%' . $keyword . '%%/', static function() use (&$params, &$counter, $value) {
-                $name = 'rpv' . $counter++;
-                $params[$name] = $value;
-                return ':' . $name;
-            }, $sql);
+            $sql = str_replace('%%' . $keyword . '%%', (string) $value, $sql);
         }
         // Keywords without a value yet (%%FILTER_...%%, %%DEBUG%%) are removed.
         $sql = preg_replace('/%%[A-Za-z][A-Za-z0-9_]*(:[^%]*)?%%/', '', $sql);
@@ -679,7 +678,7 @@ class level_service {
      * @return string[]
      */
     protected static function clean_metrics(array $metrics): array {
-        return array_values(array_map(static function($metric): string {
+        return array_values(array_map(static function ($metric): string {
             return clean_param((string) $metric, PARAM_TEXT);
         }, array_filter($metrics, 'is_scalar')));
     }

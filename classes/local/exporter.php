@@ -30,7 +30,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class exporter {
-
     /** Older format names stored on reports => data format. */
     const ALIASES = ['xls' => 'excel', 'xlsx' => 'excel'];
 
@@ -104,23 +103,32 @@ class exporter {
         $links = $offered || self::offers_png($report)
             ? [html_writer::span(get_string('downloadreport', 'local_reportium'), 'reportium-downloads-label')] : [];
         foreach ($offered as $format => $name) {
-            $url = new moodle_url('/local/reportium/viewreport.php',
-                ['id' => $report->id, 'courseid' => $courseid, 'download' => 1, 'format' => $format]);
+            $url = new moodle_url(
+                '/local/reportium/viewreport.php',
+                ['id' => $report->id, 'courseid' => $courseid, 'download' => 1, 'format' => $format]
+            );
             $links[] = self::button($url, $format, $name);
         }
         // The chart as an image (drawn on the page; hidden in the table view, see levels.js), when the report offers it.
         if (self::offers_png($report)) {
             $label = get_string('downloadchartpng', 'local_reportium');
-            $links[] = html_writer::link('#', self::icon('png') . html_writer::span('PNG'),
+            $links[] = html_writer::link(
+                '#',
+                self::icon('png') . html_writer::span('PNG'),
                 ['class' => 'btn btn-sm btn-outline-secondary reportium-download', 'title' => $label,
-                    'data-action' => 'download-png', 'aria-label' => $label]);
+                'data-action' => 'download-png',
+                'aria-label' => $label]
+            );
         }
         if ($print) {
             // Browser print (keeps the charts, which are canvases); the print stylesheet hides controls and Moodle chrome.
             $label = get_string('printreport', 'local_reportium');
-            $links[] = html_writer::link('#', self::icon('print') . html_writer::span($label),
+            $links[] = html_writer::link(
+                '#',
+                self::icon('print') . html_writer::span($label),
                 ['class' => 'btn btn-sm btn-outline-secondary reportium-download', 'title' => $label,
-                    'data-action' => 'print-report']);
+                'data-action' => 'print-report']
+            );
         }
         if (!$links) {
             return '';
@@ -140,9 +148,13 @@ class exporter {
      */
     public static function button(moodle_url $url, string $format, string $name, bool $labelled = true): string {
         $short = self::SHORTNAMES[$format] ?? strtoupper($format);
-        return html_writer::link($url, self::icon($format) . ($labelled ? html_writer::span($short) : ''),
+        return html_writer::link(
+            $url,
+            self::icon($format) . ($labelled ? html_writer::span($short) : ''),
             ['class' => 'btn btn-sm btn-outline-secondary reportium-download reportium-download-' . $format,
-                'title' => $name, 'aria-label' => $name]);
+            'title' => $name,
+            'aria-label' => $name]
+        );
     }
 
     /**
@@ -174,14 +186,36 @@ class exporter {
      * @param bool $totals add the totals row (the calculations of the cards per column)
      * @return void
      */
-    public static function download(stdClass $report, context $context, int $userid, string $format, int $level,
-            array $steps, string $search, array $filters, array $override, string $columnsort, array $range = [],
-            array $kpis = [], bool $totals = false): void {
+    public static function download(
+        stdClass $report,
+        context $context,
+        int $userid,
+        string $format,
+        int $level,
+        array $steps,
+        string $search,
+        array $filters,
+        array $override,
+        string $columnsort,
+        array $range = [],
+        array $kpis = [],
+        bool $totals = false
+    ): void {
         if (!isset(self::offered($report)[$format])) {
             throw new \moodle_exception('invalidformat', 'local_reportium');
         }
-        [$filename, $columns, $rows] = self::prepare($report, $context, $userid, $level, $steps, $search, $filters,
-            $override, $columnsort, $range);
+        [$filename, $columns, $rows] = self::prepare(
+            $report,
+            $context,
+            $userid,
+            $level,
+            $steps,
+            $search,
+            $filters,
+            $override,
+            $columnsort,
+            $range
+        );
         \core_php_time_limit::raise();
         raise_memory_limit(MEMORY_EXTRA);
         $formatter = self::row_formatter($columns);
@@ -189,8 +223,13 @@ class exporter {
         foreach (self::summary_lines($columns, $rows, self::clean_kpis($kpis, $columns), $totals) as $line) {
             $rows[] = [self::LINE_KEY => $line];
         }
-        \core\dataformat::download_data($filename, $format, array_column($columns, 'label'), new \ArrayIterator($rows),
-            static fn(array $row): array => isset($row[self::LINE_KEY]) ? $row[self::LINE_KEY] : $formatter($row));
+        \core\dataformat::download_data(
+            $filename,
+            $format,
+            array_column($columns, 'label'),
+            new \ArrayIterator($rows),
+            static fn(array $row): array => isset($row[self::LINE_KEY]) ? $row[self::LINE_KEY] : $formatter($row)
+        );
         die;
     }
 
@@ -284,8 +323,10 @@ class exporter {
         if ($key === '_rows') {
             return (float) count($rows);
         }
-        $raw = array_values(array_filter(array_map(static fn($row) => $row[$key] ?? null, $rows),
-            static fn($value) => $value !== null && (string) $value !== ''));
+        $raw = array_values(array_filter(
+            array_map(static fn($row) => $row[$key] ?? null, $rows),
+            static fn($value) => $value !== null && (string) $value !== ''
+        ));
         if ($agg === 'count') {
             return (float) count($raw);
         }
@@ -322,7 +363,9 @@ class exporter {
         }
         if ($column && $column['type'] === column_inspector::TYPE_DATE && in_array($agg, ['min', 'max'], true)) {
             return userdate((int) $value, str_replace(['%y', ', '], ['%Y', ' '], get_string(
-                !empty($column['withtime']) ? 'strftimedatetimeshort' : 'strftimedatefullshort', 'langconfig')));
+                !empty($column['withtime']) ? 'strftimedatetimeshort' : 'strftimedatefullshort',
+                'langconfig'
+            )));
         }
         $text = rtrim(rtrim(number_format($value, 1, '.', ''), '0'), '.');
         return $text . ($column && ($column['format'] ?? '') === 'progress' && $agg !== 'count' && $agg !== 'distinct' ? '%' : '');
@@ -365,11 +408,34 @@ class exporter {
      * @param bool $totals add the totals row
      * @return void
      */
-    public static function download_pdf(stdClass $report, context $context, int $userid, int $level, array $steps,
-            string $search, array $filters, array $override, string $columnsort, array $range, array $charts,
-            array $kpis, array $kpispecs = [], bool $totals = false): void {
-        [$filename, $columns, $rows, $mapping] = self::prepare($report, $context, $userid, $level, $steps, $search,
-            $filters, $override, $columnsort, $range);
+    public static function download_pdf(
+        stdClass $report,
+        context $context,
+        int $userid,
+        int $level,
+        array $steps,
+        string $search,
+        array $filters,
+        array $override,
+        string $columnsort,
+        array $range,
+        array $charts,
+        array $kpis,
+        array $kpispecs = [],
+        bool $totals = false
+    ): void {
+        [$filename, $columns, $rows, $mapping] = self::prepare(
+            $report,
+            $context,
+            $userid,
+            $level,
+            $steps,
+            $search,
+            $filters,
+            $override,
+            $columnsort,
+            $range
+        );
         // Charts as drawn on the page (one per pane, side by side when compared).
         $images = [];
         foreach (array_slice($charts, 0, 2) as $chart) {
@@ -409,9 +475,18 @@ class exporter {
     public static function pdf_file(stdClass $report, context $context, int $userid, array $view, array $range = []): array {
         $steps = (array) ($view['steps'] ?? []);
         $override = (array) ($view['override'] ?? []);
-        [$filename, $columns, $rows, $mapping] = self::prepare($report, $context, $userid, (int) ($view['level'] ?? 0),
-            $steps, (string) ($view['search'] ?? ''), (array) ($view['filters'] ?? []), $override,
-            (string) ($view['sort'] ?? ''), $range);
+        [$filename, $columns, $rows, $mapping] = self::prepare(
+            $report,
+            $context,
+            $userid,
+            (int) ($view['level'] ?? 0),
+            $steps,
+            (string) ($view['search'] ?? ''),
+            (array) ($view['filters'] ?? []),
+            $override,
+            (string) ($view['sort'] ?? ''),
+            $range
+        );
         $mapping = column_inspector::merge_mapping($mapping, $override, $columns);
         $chart = (string) ($view['chart'] ?? '');
         if ($chart === '') {
@@ -463,8 +538,10 @@ class exporter {
         foreach ($columns as $column) {
             if ($column['type'] === column_inspector::TYPE_NUMBER && in_array($column['key'], $metrics, true) && $count++ < 4) {
                 $progress = ($mapping['formats'][$column['key']] ?? $column['format'] ?? '') === 'progress';
-                $avg = $progress || preg_match('/(pct|percent|avg|average|mean|rate|ratio|porcentaje|promedio|media)/i',
-                    $column['key']);
+                $avg = $progress || preg_match(
+                    '/(pct|percent|avg|average|mean|rate|ratio|porcentaje|promedio|media)/i',
+                    $column['key']
+                );
                 $specs[] = ['key' => $column['key'], 'agg' => $avg ? 'avg' : 'sum'];
             }
         }
@@ -501,8 +578,10 @@ class exporter {
      * @return string
      */
     protected static function pdf_subtitle(array $steps, array $range): string {
-        $labels = array_filter(array_map(static fn($step) => clean_param((string) ($step['l'] ?? ''), PARAM_TEXT),
-            array_values(array_filter($steps, 'is_array'))));
+        $labels = array_filter(array_map(
+            static fn($step) => clean_param((string) ($step['l'] ?? ''), PARAM_TEXT),
+            array_values(array_filter($steps, 'is_array'))
+        ));
         $period = $range ? date_range::label((int) $range[0], (int) $range[1]) : '';
         return implode(' › ', $labels) . ($labels && $period !== '' ? ' · ' : '') . $period;
     }
@@ -601,9 +680,18 @@ class exporter {
      * @return array [array[] columns, array[] rows]
      */
     public static function view_rows(stdClass $report, context $context, int $userid, array $view, array $range = []): array {
-        [, $columns, $rows] = self::prepare($report, $context, $userid, (int) ($view['level'] ?? 0),
-            (array) ($view['steps'] ?? []), (string) ($view['search'] ?? ''), (array) ($view['filters'] ?? []),
-            (array) ($view['override'] ?? []), (string) ($view['sort'] ?? ''), $range);
+        [, $columns, $rows] = self::prepare(
+            $report,
+            $context,
+            $userid,
+            (int) ($view['level'] ?? 0),
+            (array) ($view['steps'] ?? []),
+            (string) ($view['search'] ?? ''),
+            (array) ($view['filters'] ?? []),
+            (array) ($view['override'] ?? []),
+            (string) ($view['sort'] ?? ''),
+            $range
+        );
         return [$columns, $rows];
     }
 
@@ -618,19 +706,39 @@ class exporter {
      * @param int[] $range [start, end] of the period; empty = all time
      * @return array [string path of the file, string file name with extension, int rows]
      */
-    public static function write_file(stdClass $report, context $context, int $userid, string $format, array $view,
-            array $range = []): array {
+    public static function write_file(
+        stdClass $report,
+        context $context,
+        int $userid,
+        string $format,
+        array $view,
+        array $range = []
+    ): array {
         if (!isset(self::available()[$format])) {
             throw new \moodle_exception('invalidformat', 'local_reportium');
         }
         if ($format === 'pdf') {
             return self::pdf_file($report, $context, $userid, $view, $range);
         }
-        [$filename, $columns, $rows] = self::prepare($report, $context, $userid, (int) ($view['level'] ?? 0),
-            (array) ($view['steps'] ?? []), (string) ($view['search'] ?? ''), (array) ($view['filters'] ?? []),
-            (array) ($view['override'] ?? []), (string) ($view['sort'] ?? ''), $range);
-        $path = \core\dataformat::write_data($filename, $format, array_column($columns, 'label'), new \ArrayIterator($rows),
-            self::row_formatter($columns));
+        [$filename, $columns, $rows] = self::prepare(
+            $report,
+            $context,
+            $userid,
+            (int) ($view['level'] ?? 0),
+            (array) ($view['steps'] ?? []),
+            (string) ($view['search'] ?? ''),
+            (array) ($view['filters'] ?? []),
+            (array) ($view['override'] ?? []),
+            (string) ($view['sort'] ?? ''),
+            $range
+        );
+        $path = \core\dataformat::write_data(
+            $filename,
+            $format,
+            array_column($columns, 'label'),
+            new \ArrayIterator($rows),
+            self::row_formatter($columns)
+        );
         return [$path, basename($path), count($rows)];
     }
 
@@ -649,25 +757,38 @@ class exporter {
      * @param int[] $range
      * @return array [string file name without extension, array[] columns, array[] rows, array mapping of the level]
      */
-    protected static function prepare(stdClass $report, context $context, int $userid, int $level, array $steps,
-            string $search, array $filters, array $override, string $columnsort, array $range): array {
+    protected static function prepare(
+        stdClass $report,
+        context $context,
+        int $userid,
+        int $level,
+        array $steps,
+        string $search,
+        array $filters,
+        array $override,
+        string $columnsort,
+        array $range
+    ): array {
         $steps = array_values(array_filter($steps, 'is_array'));
-        $path = array_map(static function(array $step): string {
+        $path = array_map(static function (array $step): string {
             return (string) ($step['v'] ?? '');
         }, $steps);
         $payload = level_service::get_level_payload($report, $level, $path, $context, $userid, $range);
         if (isset($override['calculated'])) {
             // Calculated columns changed on screen and not saved yet.
-            [$payload['columns'], $payload['rows']] = formula::apply($payload['columns'], $payload['rows'],
-                $override['calculated']);
+            [$payload['columns'], $payload['rows']] = formula::apply(
+                $payload['columns'],
+                $payload['rows'],
+                $override['calculated']
+            );
         }
         $rows = level_service::visible_rows($payload, $search, $filters, $override, $columnsort);
 
-        $columns = array_values(array_filter($payload['columns'], static function(array $column): bool {
+        $columns = array_values(array_filter($payload['columns'], static function (array $column): bool {
             return $column['type'] !== column_inspector::TYPE_ID;
         }));
         $columns = self::user_order($columns, (int) $report->id, $level, $userid);
-        $labels = array_map(static function(array $step): string {
+        $labels = array_map(static function (array $step): string {
             return clean_param((string) ($step['l'] ?? ''), PARAM_TEXT);
         }, $steps);
         $filename = clean_filename(implode(' - ', array_filter(array_merge([format_string($report->name)], $labels))));
@@ -709,14 +830,16 @@ class exporter {
      * @return callable
      */
     protected static function row_formatter(array $columns): callable {
-        return static function(array $row) use ($columns): array {
+        return static function (array $row) use ($columns): array {
             $line = [];
             foreach ($columns as $column) {
                 $value = $row[$column['key']] ?? '';
                 if ($column['type'] === column_inspector::TYPE_DATE && (int) $value > 0) {
                     // Same format as on screen: the user's language, with the full year.
                     $value = userdate((int) $value, str_replace(['%y', ', '], ['%Y', ' '], get_string(
-                        !empty($column['withtime']) ? 'strftimedatetimeshort' : 'strftimedatefullshort', 'langconfig')));
+                        !empty($column['withtime']) ? 'strftimedatetimeshort' : 'strftimedatefullshort',
+                        'langconfig'
+                    )));
                 }
                 $line[] = (string) $value;
             }

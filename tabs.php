@@ -39,8 +39,10 @@ $navitems[] = [
     'icon' => 'fa-pencil',
     'active' => $currenttab === 'report',
 ];
-if (has_any_capability(['local/reportium:schedule', 'local/reportium:manage'], $context)
-        && has_capability('local/reportium:download', $context)) {
+if (
+    has_any_capability(['local/reportium:schedule', 'local/reportium:manage'], $context)
+        && has_capability('local/reportium:download', $context)
+) {
     // Scheduled email delivery of the report.
     $navitems[] = [
         'url' => (new moodle_url('/local/reportium/schedules.php', ['id' => $report->id]))->out(false),
@@ -63,8 +65,10 @@ echo $OUTPUT->render_from_template('local_reportium/navigation', [
     'items' => $navitems,
     'allreports' => [
         // The report id keeps this navigation visible on the Reports manager page.
-        'url' => (new moodle_url('/local/reportium/managereport.php',
-            ['courseid' => $course->id, 'id' => $report->id]))->out(false),
+        'url' => (new moodle_url(
+            '/local/reportium/managereport.php',
+            ['courseid' => $course->id, 'id' => $report->id]
+        ))->out(false),
         'label' => get_string('nav_allreports', 'local_reportium'),
         'active' => $currenttab === 'managereports',
     ],

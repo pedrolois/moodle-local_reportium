@@ -29,7 +29,6 @@ use local_reportium\local\date_range;
  * @covers     \local_reportium\external\levels
  */
 final class page_data_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -39,11 +38,16 @@ final class page_data_test extends \advanced_testcase {
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
         $this->report = $generator->create_report(['name' => 'Page data']);
-        $generator->create_level($this->report->id, 0,
-            "SELECT 1 AS id, 'A' AS name, %%STARTTIME%% AS starts UNION ALL SELECT 2, 'B', %%ENDTIME%%");
+        $generator->create_level(
+            $this->report->id,
+            0,
+            "SELECT 1 AS id, 'A' AS name, %%STARTTIME%% AS starts UNION ALL SELECT 2, 'B', %%ENDTIME%%"
+        );
         $generator->create_level($this->report->id, 1, 'SELECT 1 AS id, %%PREVIOUSVALUE%% AS parent');
-        \local_reportium\local\report_roles::set((int) $this->report->id,
-            \local_reportium\local\report_roles::default_roles());
+        \local_reportium\local\report_roles::set(
+            (int) $this->report->id,
+            \local_reportium\local\report_roles::default_roles()
+        );
         \core\di::get(\moodle_database::class)->set_field('local_reportium', 'daterange', 'last7', ['id' => $this->report->id]);
         $this->report->daterange = 'last7';
     }
@@ -110,12 +114,16 @@ final class page_data_test extends \advanced_testcase {
     }
     public function test_report_files_keep_the_kpi_defaults(): void {
         global $DB;
-        $DB->update_record('local_reportium',
-            (object) ['id' => $this->report->id, 'kpicards' => 1, 'kpirows' => 0, 'totalsrow' => 1]);
+        $DB->update_record(
+            'local_reportium',
+            (object) ['id' => $this->report->id, 'kpicards' => 1, 'kpirows' => 0, 'totalsrow' => 1]
+        );
         $report = $DB->get_record('local_reportium', ['id' => $this->report->id]);
         $file = json_decode(\local_reportium\local\report_transfer::export($report), true);
-        $this->assertSame([1, 0, 1],
-            [(int) $file['report']['kpicards'], (int) $file['report']['kpirows'], (int) $file['report']['totalsrow']]);
+        $this->assertSame(
+            [1, 0, 1],
+            [(int) $file['report']['kpicards'], (int) $file['report']['kpirows'], (int) $file['report']['totalsrow']]
+        );
         $id = \local_reportium\local\report_transfer::import(json_encode($file), SITEID, (int) get_admin()->id);
         $copy = $DB->get_record('local_reportium', ['id' => $id]);
         $this->assertSame([1, 0, 1], [(int) $copy->kpicards, (int) $copy->kpirows, (int) $copy->totalsrow]);

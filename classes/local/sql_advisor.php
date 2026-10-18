@@ -26,7 +26,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class sql_advisor {
-
     /** @var int Default threshold, in seconds. */
     const DEFAULT_SECONDS = 3;
 

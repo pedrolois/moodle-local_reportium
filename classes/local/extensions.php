@@ -31,7 +31,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class extensions {
-
     /** @var string Callback of an assistant in the SQL Inspector. */
     const SQL_ASSISTANT = 'reportium_sql_assistant';
 
@@ -56,8 +55,10 @@ class extensions {
         foreach (get_plugins_with_function(self::SQL_ASSISTANT) as $plugins) {
             foreach ($plugins as $function) {
                 $assistant = $function($report, $context, $courseid);
-                if (is_array($assistant) && !empty($assistant['module'])
-                        && preg_match('/^[a-z][a-z0-9_]*\/[a-z0-9_]+$/', (string) $assistant['module'])) {
+                if (
+                    is_array($assistant) && !empty($assistant['module'])
+                        && preg_match('/^[a-z][a-z0-9_]*\/[a-z0-9_]+$/', (string) $assistant['module'])
+                ) {
                     return ['module' => (string) $assistant['module'], 'config' => (array) ($assistant['config'] ?? [])];
                 }
             }

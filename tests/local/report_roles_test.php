@@ -40,7 +40,6 @@ use local_reportium\output\report_roles_editable;
  * @covers     \local_reportium\local\level_service
  */
 final class report_roles_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
     /** @var \stdClass */
@@ -76,8 +75,10 @@ final class report_roles_test extends \advanced_testcase {
             'global' => 1, 'displaytotalrecords' => 1, 'displayprintbutton' => 1,
         ];
         $this->report->id = $DB->insert_record('local_reportium', $this->report);
-        level_service::save_root_sql((int) $this->report->id,
-            'SELECT c.id, c.fullname FROM {course} c WHERE c.id > 1 AND c.id IN (%%MYCOURSES%%) ORDER BY c.fullname');
+        level_service::save_root_sql(
+            (int) $this->report->id,
+            'SELECT c.id, c.fullname FROM {course} c WHERE c.id > 1 AND c.id IN (%%MYCOURSES%%) ORDER BY c.fullname'
+        );
         $DB->insert_record('local_reportium_level', (object) [
             'reportid' => $this->report->id, 'drilllevel' => 1, 'label' => '', 'config' => '{}',
             'sqlquery' => "SELECT u.id, u.firstname, u.lastname
@@ -111,8 +112,13 @@ final class report_roles_test extends \advanced_testcase {
      */
     private function rows_for(\stdClass $user, int $level, array $path = []): array {
         $this->setUser($user);
-        return level_service::get_level_payload($this->report, $level, $path, \context_system::instance(),
-            (int) $user->id)['rows'];
+        return level_service::get_level_payload(
+            $this->report,
+            $level,
+            $path,
+            \context_system::instance(),
+            (int) $user->id
+        )['rows'];
     }
 
     public function test_only_the_roles_given_to_the_report_can_open_it(): void {
@@ -139,7 +145,8 @@ final class report_roles_test extends \advanced_testcase {
     public function test_course_reports_need_the_role_in_that_course(): void {
         global $DB;
         $report = $this->getDataGenerator()->get_plugin_generator('local_reportium')->create_report(
-            ['name' => 'Course A report', 'courseid' => $this->coursea->id]);
+            ['name' => 'Course A report', 'courseid' => $this->coursea->id]
+        );
         report_roles::set((int) $report->id, [(int) $DB->get_field('role', 'id', ['shortname' => 'student'])]);
         $context = \context_course::instance($this->coursea->id);
         $this->assertTrue(report_roles::can_view($report, (int) $this->student->id, $context));
@@ -196,8 +203,11 @@ final class report_roles_test extends \advanced_testcase {
 
         // The admin adds two roles through the core in-place editing callback, then removes one.
         $this->setAdminUser();
-        $editable = local_reportium_inplace_editable_for_test('report_roles', $this->report->id,
-            json_encode([$teacherrole, $managerrole]));
+        $editable = local_reportium_inplace_editable_for_test(
+            'report_roles',
+            $this->report->id,
+            json_encode([$teacherrole, $managerrole])
+        );
         $this->assertInstanceOf(report_roles_editable::class, $editable);
         $this->assertEqualsCanonicalizing([$teacherrole, $managerrole], report_roles::get((int) $this->report->id));
         local_reportium_inplace_editable_for_test('report_roles', $this->report->id, json_encode([$teacherrole]));

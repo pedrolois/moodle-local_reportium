@@ -27,7 +27,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\level_service
  */
 final class column_links_test extends \advanced_testcase {
-
     /**
      * Columns of a level from their aliases (types do not matter for links).
      *
@@ -53,8 +52,10 @@ final class column_links_test extends \advanced_testcase {
 
     public function test_the_id_column_when_the_name_is_unambiguous(): void {
         // A course list.
-        $this->assertSame(['course' => ['kind' => 'course', 'idkey' => 'id', 'courseidkey' => null]],
-            column_inspector::links($this->columns('id', 'course', 'learners')));
+        $this->assertSame(
+            ['course' => ['kind' => 'course', 'idkey' => 'id', 'courseidkey' => null]],
+            column_inspector::links($this->columns('id', 'course', 'learners'))
+        );
         // People: a full name next to an email.
         $this->assertSame('user', column_inspector::links($this->columns('id', 'fullname', 'email'))['fullname']['kind']);
         // The "fullname" column alone also names courses: no link.

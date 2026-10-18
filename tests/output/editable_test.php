@@ -27,7 +27,6 @@ namespace local_reportium\output;
  * @covers     ::local_reportium_inplace_editable
  */
 final class editable_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -47,7 +46,8 @@ final class editable_test extends \advanced_testcase {
         $this->assertInstanceOf(report_views_editable::class, $result);
         $this->assertSame('bar,table', $DB->get_field('local_reportium', 'views', ['id' => $this->report->id]));
         $this->assertSame(['bar', 'table'], report_views_editable::chosen(
-            $DB->get_record('local_reportium', ['id' => $this->report->id])));
+            $DB->get_record('local_reportium', ['id' => $this->report->id])
+        ));
     }
 
     public function test_all_or_none_means_every_chart_type(): void {

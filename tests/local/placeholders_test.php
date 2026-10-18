@@ -27,14 +27,17 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\level_service
  */
 final class placeholders_test extends \advanced_testcase {
-
     public function test_viewer_placeholders_are_bound(): void {
         $vars = ['userid' => 5, 'courseid' => 9, 'categoryid' => 3, 'mycourses' => [11, 12]];
         [$sql, $params] = level_service::bind_placeholders(
-            'SELECT 1 WHERE a = %%USERID%% AND b = %%COURSEID%% AND c = %%CATEGORYID%% AND d IN (%%MYCOURSES%%)', [], $vars);
+            'SELECT 1 WHERE a = %%USERID%% AND b = %%COURSEID%% AND c = %%CATEGORYID%% AND d IN (%%MYCOURSES%%)',
+            [],
+            $vars
+        );
         $this->assertStringNotContainsString('%%', $sql);
-        $this->assertSame([5, 9, 3, 11, 12], array_values($params));
-        $this->assertSame(5, substr_count($sql, ':rpv'));
+        // Integers go in as integer literals (typed on every database, PostgreSQL included).
+        $this->assertStringContainsString('a = 5 AND b = 9 AND c = 3 AND d IN (11, 12)', $sql);
+        $this->assertSame([], $params);
     }
 
     public function test_mycourses_every_course_and_no_course(): void {
@@ -50,15 +53,18 @@ final class placeholders_test extends \advanced_testcase {
         $before = time();
         [$sql, $params] = level_service::bind_placeholders(
             "SELECT 1 FROM prefix_course WHERE t < %%NOW%% AND u = %%WWWROOT%% AND x BETWEEN %%STARTTIME%% AND %%ENDTIME%%"
-            . " %%FILTER_COURSES:c.id%% %%FILTER_USERS_profile_org:uo.data:~%% %%DEBUG%%", []);
+            . " %%FILTER_COURSES:c.id%% %%FILTER_USERS_profile_org:uo.data:~%% %%DEBUG%%",
+            []
+        );
         $this->assertStringContainsString($CFG->prefix . 'course', $sql);
         $this->assertStringNotContainsString('%%', $sql);
-        $values = array_values($params);
-        $this->assertGreaterThanOrEqual($before, $values[0]);
+        $this->assertSame([], $params);
+        $this->assertMatchesRegularExpression('/t < (\d+) AND/', $sql);
+        preg_match('/t < (\d+) AND/', $sql, $now);
+        $this->assertGreaterThanOrEqual($before, (int) $now[1]);
         // The site address goes in as text (so it also works inside the quotes of a string in the SQL).
         $this->assertStringContainsString("u = '" . $CFG->wwwroot . "'", $sql);
-        $this->assertNotContains($CFG->wwwroot, $values);
-        $this->assertSame([0, 2145938400], array_slice($values, 1, 2));
+        $this->assertStringContainsString('x BETWEEN 0 AND 2145938400', $sql);
     }
 
     public function test_viewer_placeholders_without_viewer_are_removed(): void {
@@ -87,23 +93,30 @@ final class placeholders_test extends \advanced_testcase {
             ],
             'mapping' => ['labelcolumn' => 'name', 'metrics' => ['n'], 'defaultview' => 'bar'],
         ];
-        $names = function(array $rows): array {
+        $names = function (array $rows): array {
             return array_column($rows, 'name');
         };
-        $this->assertSame(['Alpha', 'alphabet'],
-            $names(level_service::visible_rows($payload, '', ['name' => ['like' => 'ALPHA']])));
+        $this->assertSame(
+            ['Alpha', 'alphabet'],
+            $names(level_service::visible_rows($payload, '', ['name' => ['like' => 'ALPHA']]))
+        );
         $this->assertSame(['Beta'], $names(level_service::visible_rows($payload, '', ['name' => ['in' => ['Beta']]])));
         $this->assertSame(['Beta', 'alphabet'], $names(level_service::visible_rows($payload, '', ['n' => ['min' => '10']])));
         $this->assertSame(['Alpha', 'Beta'], $names(level_service::visible_rows($payload, '', ['n' => ['max' => '15']])));
         // Dates filter From / To as timestamps.
-        $this->assertSame(['Beta'], $names(level_service::visible_rows($payload, '',
-            ['day' => ['min' => '1768000000', 'max' => '1770000000']])));
+        $this->assertSame(['Beta'], $names(level_service::visible_rows(
+            $payload,
+            '',
+            ['day' => ['min' => '1768000000', 'max' => '1770000000']]
+        )));
         // Unknown columns and malformed filters are ignored; search and filters add up.
         $this->assertCount(3, level_service::visible_rows($payload, '', ['gone' => ['in' => ['x']], 'n' => 'bad']));
         $this->assertSame(['alphabet'], $names(level_service::visible_rows($payload, 'alpha', ['n' => ['min' => '20']])));
         // Sort: text ignoring case, dates numerically.
-        $this->assertSame(['alphabet', 'Beta', 'Alpha'],
-            $names(level_service::visible_rows($payload, '', [], [], 'day:desc')));
+        $this->assertSame(
+            ['alphabet', 'Beta', 'Alpha'],
+            $names(level_service::visible_rows($payload, '', [], [], 'day:desc'))
+        );
         $this->assertSame(['Alpha', 'alphabet', 'Beta'], $names(level_service::visible_rows($payload, '', [], [], 'name:asc')));
     }
 

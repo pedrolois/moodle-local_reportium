@@ -89,8 +89,11 @@ if ($report && $duplicate) {
     $copy->id = $DB->insert_record('local_reportium', $copy);
     report_roles::set((int) $copy->id, report_roles::get((int) $report->id));
     report_roles::set_defaults((int) $copy->id);
-    set_config('cachettlminutes_report_' . $copy->id,
-        (int) get_config('local_reportium', 'cachettlminutes_report_' . $report->id), 'local_reportium');
+    set_config(
+        'cachettlminutes_report_' . $copy->id,
+        (int) get_config('local_reportium', 'cachettlminutes_report_' . $report->id),
+        'local_reportium'
+    );
     $now = time();
     foreach ($DB->get_records(level_service::TABLE, ['reportid' => $report->id]) as $level) {
         unset($level->id);
@@ -109,10 +112,14 @@ if ($report && $delete) {
         $PAGE->set_title($title);
         $PAGE->set_heading($title);
         echo $OUTPUT->header();
-        echo $OUTPUT->confirm(get_string('confirmdeletereport', 'local_reportium'),
-            new single_button(new moodle_url('/local/reportium/editreport.php',
-                ['id' => $report->id, 'delete' => 1, 'confirm' => 1, 'sesskey' => sesskey()]), get_string('yes')),
-            new single_button($managerurl, get_string('no'), 'get'));
+        echo $OUTPUT->confirm(
+            get_string('confirmdeletereport', 'local_reportium'),
+            new single_button(new moodle_url(
+                '/local/reportium/editreport.php',
+                ['id' => $report->id, 'delete' => 1, 'confirm' => 1, 'sesskey' => sesskey()]
+            ), get_string('yes')),
+            new single_button($managerurl, get_string('no'), 'get')
+        );
         echo $OUTPUT->footer();
         exit;
     }

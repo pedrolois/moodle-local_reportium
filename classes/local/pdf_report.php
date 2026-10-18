@@ -28,7 +28,6 @@ namespace local_reportium\local;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class pdf_report {
-
     /** @var string[] Colours of the series (those of the charts on screen). */
     const PALETTE = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
 
@@ -95,8 +94,23 @@ class pdf_report {
                 $size = getimagesizefromstring($binary);
                 $height = $size ? $each * $size[1] / max(1, $size[0]) : $each * 0.45;
                 $height = min($height, 110);
-                $pdf->Image('@' . $binary, 12 + $i * ($each + $gap), $top, $each, $height, 'PNG', '', '', true, 150, '',
-                    false, false, 0, true);
+                $pdf->Image(
+                    '@' . $binary,
+                    12 + $i * ($each + $gap),
+                    $top,
+                    $each,
+                    $height,
+                    'PNG',
+                    '',
+                    '',
+                    true,
+                    150,
+                    '',
+                    false,
+                    false,
+                    0,
+                    true
+                );
                 $tallest = max($tallest, $height);
             }
             $pdf->SetY($top + $tallest + 4);
@@ -125,8 +139,13 @@ class pdf_report {
             $body .= '<tr' . ($i % 2 ? ' style="background-color:#f8f9fa;"' : '') . '>';
             foreach (array_values($format($row)) as $c => $value) {
                 $key = $columns[$c]['key'];
-                $body .= '<td>' . exporter::pdf_cell((string) ($row[$key] ?? ''), $value, $doc['formats'][$key] ?? 'text',
-                    $colors, $states) . '</td>';
+                $body .= '<td>' . exporter::pdf_cell(
+                    (string) ($row[$key] ?? ''),
+                    $value,
+                    $doc['formats'][$key] ?? 'text',
+                    $colors,
+                    $states
+                ) . '</td>';
             }
             $body .= '</tr>';
         }
@@ -138,8 +157,12 @@ class pdf_report {
             $body .= '</tr>';
         }
         $pdf->SetFont('helvetica', '', count($columns) > 8 ? 7 : 8);
-        $pdf->writeHTML('<table cellpadding="3"><thead><tr>' . $head . '</tr></thead><tbody>' . $body . '</tbody></table>',
-            true, false, true);
+        $pdf->writeHTML(
+            '<table cellpadding="3"><thead><tr>' . $head . '</tr></thead><tbody>' . $body . '</tbody></table>',
+            true,
+            false,
+            true
+        );
         return $pdf;
     }
 
@@ -160,8 +183,10 @@ class pdf_report {
         $bykey = array_column($columns, null, 'key');
         // Each chart type may keep its own metrics and stacking.
         $own = (array) (($mapping['views'] ?? [])[$type] ?? []);
-        $metrics = array_values(array_filter((array) ($own['metrics'] ?? $mapping['metrics'] ?? []),
-            static fn($key) => isset($bykey[$key]) && $bykey[$key]['type'] === column_inspector::TYPE_NUMBER));
+        $metrics = array_values(array_filter(
+            (array) ($own['metrics'] ?? $mapping['metrics'] ?? []),
+            static fn($key) => isset($bykey[$key]) && $bykey[$key]['type'] === column_inspector::TYPE_NUMBER
+        ));
         if (!$metrics) {
             return null;
         }
@@ -173,10 +198,14 @@ class pdf_report {
         $labels = [];
         foreach ($rows as $row) {
             $value = $row[$main] ?? '';
-            if (isset($bykey[$main]) && $bykey[$main]['type'] === column_inspector::TYPE_DATE && is_numeric($value)
-                    && (int) $value > 0) {
+            if (
+                isset($bykey[$main]) && $bykey[$main]['type'] === column_inspector::TYPE_DATE && is_numeric($value)
+                    && (int) $value > 0
+            ) {
                 $value = userdate((int) $value, str_replace(['%y', ', '], ['%Y', ' '], get_string(
-                    !empty($bykey[$main]['withtime']) ? 'strftimedatetimeshort' : 'strftimedatefullshort', 'langconfig')));
+                    !empty($bykey[$main]['withtime']) ? 'strftimedatetimeshort' : 'strftimedatefullshort',
+                    'langconfig'
+                )));
             }
             $label = trim(strip_tags((string) $value));
             if ($extra !== '' && trim((string) ($row[$extra] ?? '')) !== '') {

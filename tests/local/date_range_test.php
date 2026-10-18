@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\date_range
  */
 final class date_range_test extends \advanced_testcase {
-
     /**
      * A period as readable dates.
      *
@@ -67,11 +66,15 @@ final class date_range_test extends \advanced_testcase {
         $tz = new \DateTimeZone('Europe/Madrid');
         $from = (new \DateTime('2026-03-05 12:00:00', $tz))->getTimestamp();
         $to = (new \DateTime('2026-03-07 09:00:00', $tz))->getTimestamp();
-        $this->assertSame('2026-03-05 00:00:00 / 2026-03-07 23:59:59',
-            $this->dates(date_range::resolve('custom', 0, $from, $to, $tz), $tz));
+        $this->assertSame(
+            '2026-03-05 00:00:00 / 2026-03-07 23:59:59',
+            $this->dates(date_range::resolve('custom', 0, $from, $to, $tz), $tz)
+        );
         // Swapped dates are put in order; no dates = all time.
-        $this->assertSame('2026-03-05 00:00:00 / 2026-03-07 23:59:59',
-            $this->dates(date_range::resolve('custom', 0, $to, $from, $tz), $tz));
+        $this->assertSame(
+            '2026-03-05 00:00:00 / 2026-03-07 23:59:59',
+            $this->dates(date_range::resolve('custom', 0, $to, $from, $tz), $tz)
+        );
         $this->assertSame([0, date_range::ALL_END], date_range::resolve('custom', 0, 0, 0, $tz));
     }
 
@@ -111,8 +114,11 @@ final class date_range_test extends \advanced_testcase {
         $this->setAdminUser();
         $generator = $this->getDataGenerator()->get_plugin_generator('local_reportium');
         $report = $generator->create_report(['name' => 'Period']);
-        $generator->create_level($report->id, 0,
-            "SELECT 1 AS id, %%STARTTIME%% AS starts, %%ENDTIME%% AS ends, 1 AS n");
+        $generator->create_level(
+            $report->id,
+            0,
+            "SELECT 1 AS id, %%STARTTIME%% AS starts, %%ENDTIME%% AS ends, 1 AS n"
+        );
         $context = \context_system::instance();
         $all = level_service::get_level_payload($report, 0, [], $context, (int) get_admin()->id);
         $this->assertSame('0', (string) $all['rows'][0]['starts']);
@@ -127,8 +133,10 @@ final class date_range_test extends \advanced_testcase {
         $this->assertSame(date_range::resolve('today')[0], (int) $row['starts']);
         $this->assertNotSame('', $data['rangelabel']);
         $previous = \local_reportium\external\levels::get_level_data((int) $report->id, 0, [], 0, 'today', 0, 0, true);
-        $this->assertSame(date_range::resolve('today')[0] - DAYSECS,
-            (int) json_decode($previous['rows'], true)[0]['starts']);
+        $this->assertSame(
+            date_range::resolve('today')[0] - DAYSECS,
+            (int) json_decode($previous['rows'], true)[0]['starts']
+        );
     }
 
     public function test_log_templates_filter_by_period(): void {
@@ -140,14 +148,21 @@ final class date_range_test extends \advanced_testcase {
         $sql = level_service::get_root_sql((int) $logins->id);
         $this->assertStringContainsString(report_templates::PERIOD, $sql);
         // An installed report with the SQL of before gets the condition; a level changed by a user does not.
-        $DB->set_field('local_reportium_level', 'sqlquery', str_replace(report_templates::PERIOD, '', $sql),
-            ['reportid' => $logins->id, 'drilllevel' => 0]);
+        $DB->set_field(
+            'local_reportium_level',
+            'sqlquery',
+            str_replace(report_templates::PERIOD, '', $sql),
+            ['reportid' => $logins->id, 'drilllevel' => 0]
+        );
         $DB->set_field('local_reportium_level', 'sqlquery', 'SELECT 1 AS id', ['reportid' => $logins->id, 'drilllevel' => 1]);
         $DB->set_field('local_reportium', 'daterange', null, ['id' => $logins->id]);
         $this->assertGreaterThanOrEqual(1, report_templates::add_date_ranges());
         $this->assertSame($sql, level_service::get_root_sql((int) $logins->id));
-        $this->assertSame('SELECT 1 AS id', $DB->get_field('local_reportium_level', 'sqlquery',
-            ['reportid' => $logins->id, 'drilllevel' => 1]));
+        $this->assertSame('SELECT 1 AS id', $DB->get_field(
+            'local_reportium_level',
+            'sqlquery',
+            ['reportid' => $logins->id, 'drilllevel' => 1]
+        ));
         $this->assertSame('last30', $DB->get_field('local_reportium', 'daterange', ['id' => $logins->id]));
     }
 }

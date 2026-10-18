@@ -26,7 +26,6 @@ namespace local_reportium\local;
  * @covers     \local_reportium\local\column_inspector
  */
 final class column_inspector_test extends \basic_testcase {
-
     /**
      * Data provider for type detection.
      *

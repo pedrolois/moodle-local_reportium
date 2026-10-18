@@ -32,7 +32,6 @@ use moodle_exception;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class chat extends external_api {
-
     /**
      * Parameters of prompt_file.
      *
@@ -42,8 +41,12 @@ class chat extends external_api {
         return new external_function_parameters([
             'reportid' => new external_value(PARAM_INT, 'Report id'),
             'courseid' => new external_value(PARAM_INT, 'Course to run a global report in (0 = its own)', VALUE_DEFAULT, 0),
-            'level' => new external_value(PARAM_INT, 'Drill level being edited in the SQL Inspector (-1 = none)',
-                VALUE_DEFAULT, -1),
+            'level' => new external_value(
+                PARAM_INT,
+                'Drill level being edited in the SQL Inspector (-1 = none)',
+                VALUE_DEFAULT,
+                -1
+            ),
         ]);
     }
 
@@ -57,8 +60,10 @@ class chat extends external_api {
      */
     public static function prompt_file(int $reportid, int $courseid = 0, int $level = -1): array {
         global $USER;
-        $params = self::validate_parameters(self::prompt_file_parameters(),
-            ['reportid' => $reportid, 'courseid' => $courseid, 'level' => $level]);
+        $params = self::validate_parameters(
+            self::prompt_file_parameters(),
+            ['reportid' => $reportid, 'courseid' => $courseid, 'level' => $level]
+        );
         $report = level_service::get_report($params['reportid']);
         $context = level_service::get_context($report, $params['courseid']);
         self::validate_context($context);

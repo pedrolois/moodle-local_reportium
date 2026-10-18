@@ -30,7 +30,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_transfer {
-
     /** @var string Format name written in every report file. */
     const FORMAT = 'reportium-report';
 
@@ -135,8 +134,10 @@ class report_transfer {
         $content = trim($content);
         $data = json_decode($content, true);
         if (is_array($data)) {
-            if (($data['format'] ?? '') !== self::FORMAT || !is_array($data['report'] ?? null)
-                    || trim((string) ($data['report']['name'] ?? '')) === '') {
+            if (
+                ($data['format'] ?? '') !== self::FORMAT || !is_array($data['report'] ?? null)
+                    || trim((string) ($data['report']['name'] ?? '')) === ''
+            ) {
                 throw new moodle_exception('errorimporting', 'local_reportium');
             }
         } else {
@@ -303,7 +304,7 @@ class report_transfer {
         global $DB;
         $now = time();
         $views = array_intersect(['bar', 'pie', 'line', 'table'], explode(',', (string) ($data['report']['views'] ?? '')));
-        $export = array_intersect(array_keys(exporter::available()), array_map(static function(string $format): string {
+        $export = array_intersect(array_keys(exporter::available()), array_map(static function (string $format): string {
             return exporter::ALIASES[$format] ?? $format;
         }, explode(',', (string) ($data['report']['export'] ?? ''))));
         $report = (object) [
@@ -348,12 +349,19 @@ class report_transfer {
         $roles = array_filter((array) ($data['roles'] ?? []), 'is_string');
         if ($roles) {
             [$insql, $params] = $DB->get_in_or_equal($roles);
-            report_roles::set($report->id, array_map('intval', $DB->get_fieldset_select('role', 'id', "shortname $insql",
-                $params)));
+            report_roles::set($report->id, array_map('intval', $DB->get_fieldset_select(
+                'role',
+                'id',
+                "shortname $insql",
+                $params
+            )));
         }
         report_roles::set_defaults($report->id);
-        set_config('cachettlminutes_report_' . $report->id, max(0, (int) ($data['cachettlminutes'] ?? 0)),
-            'local_reportium');
+        set_config(
+            'cachettlminutes_report_' . $report->id,
+            max(0, (int) ($data['cachettlminutes'] ?? 0)),
+            'local_reportium'
+        );
         $transaction->allow_commit();
         return $report->id;
     }
@@ -397,8 +405,10 @@ class report_transfer {
      */
     public static function components_sql(string $components): string {
         // Only plain data objects are unserialized.
-        $data = @unserialize(preg_replace('/O:6:"object"/', 'O:8:"stdClass"', $components),
-            ['allowed_classes' => [stdClass::class]]);
+        $data = @unserialize(
+            preg_replace('/O:6:"object"/', 'O:8:"stdClass"', $components),
+            ['allowed_classes' => [stdClass::class]]
+        );
         if (!is_array($data) || !isset($data['customsql']['config'])) {
             return '';
         }

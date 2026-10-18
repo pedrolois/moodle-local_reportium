@@ -28,7 +28,6 @@ namespace local_reportium\task;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class regrade_courses extends \core\task\scheduled_task {
-
     /**
      * Name of the task.
      *

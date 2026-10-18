@@ -67,37 +67,62 @@ if ($download && $format && isset(exporter::offered($report)[$format])) {
         $override = json_decode(optional_param('rmap', '{}', PARAM_RAW), true);
         $charts = json_decode(optional_param('rcharts', '[]', PARAM_RAW), true);
         $kpis = json_decode(optional_param('rkpis', '[]', PARAM_RAW), true);
-        exporter::download_pdf($report, $context, (int) $USER->id, max(0, optional_param('rlevel', 0, PARAM_INT)),
+        exporter::download_pdf(
+            $report,
+            $context,
+            (int) $USER->id,
+            max(0, optional_param('rlevel', 0, PARAM_INT)),
             is_array($steps) ? array_values(array_filter($steps, 'is_array')) : [],
-            optional_param('rq', '', PARAM_RAW_TRIMMED), is_array($filters) ? $filters : [],
-            is_array($override) ? $override : [], optional_param('rsort', '', PARAM_RAW_TRIMMED),
-            \local_reportium\external\levels::range(optional_param('rrange', '', PARAM_ALPHANUMEXT),
-                optional_param('rfrom', 0, PARAM_INT), optional_param('rto', 0, PARAM_INT)),
-            is_array($charts) ? $charts : [], is_array($kpis) ? $kpis : [],
-            (array) json_decode(optional_param('rkpi', '[]', PARAM_RAW), true), (bool) optional_param('rtotals', 0, PARAM_BOOL));
+            optional_param('rq', '', PARAM_RAW_TRIMMED),
+            is_array($filters) ? $filters : [],
+            is_array($override) ? $override : [],
+            optional_param('rsort', '', PARAM_RAW_TRIMMED),
+            \local_reportium\external\levels::range(
+                optional_param('rrange', '', PARAM_ALPHANUMEXT),
+                optional_param('rfrom', 0, PARAM_INT),
+                optional_param('rto', 0, PARAM_INT)
+            ),
+            is_array($charts) ? $charts : [],
+            is_array($kpis) ? $kpis : [],
+            (array) json_decode(optional_param('rkpi', '[]', PARAM_RAW), true),
+            (bool) optional_param('rtotals', 0, PARAM_BOOL)
+        );
     }
     // The file holds what is on screen: level, search, filters and column order (sent by the interactive view).
     $steps = json_decode(optional_param('rpath', '[]', PARAM_RAW), true);
     $filters = json_decode(optional_param('rf', '{}', PARAM_RAW), true);
     $override = json_decode(optional_param('rmap', '{}', PARAM_RAW), true);
-    exporter::download($report, $context, (int) $USER->id, $format,
+    exporter::download(
+        $report,
+        $context,
+        (int) $USER->id,
+        $format,
         max(0, optional_param('rlevel', 0, PARAM_INT)),
         is_array($steps) ? array_values(array_filter($steps, 'is_array')) : [],
-        optional_param('rq', '', PARAM_RAW_TRIMMED), is_array($filters) ? $filters : [],
-        is_array($override) ? $override : [], optional_param('rsort', '', PARAM_RAW_TRIMMED),
+        optional_param('rq', '', PARAM_RAW_TRIMMED),
+        is_array($filters) ? $filters : [],
+        is_array($override) ? $override : [],
+        optional_param('rsort', '', PARAM_RAW_TRIMMED),
         // Period on screen, as the interactive view sends it.
-        \local_reportium\external\levels::range(optional_param('rrange', '', PARAM_ALPHANUMEXT),
-            optional_param('rfrom', 0, PARAM_INT), optional_param('rto', 0, PARAM_INT)),
+        \local_reportium\external\levels::range(
+            optional_param('rrange', '', PARAM_ALPHANUMEXT),
+            optional_param('rfrom', 0, PARAM_INT),
+            optional_param('rto', 0, PARAM_INT)
+        ),
         // KPI cards and totals row on screen (recalculated over the same rows).
-        (array) json_decode(optional_param('rkpi', '[]', PARAM_RAW), true), (bool) optional_param('rtotals', 0, PARAM_BOOL));
+        (array) json_decode(optional_param('rkpi', '[]', PARAM_RAW), true),
+        (bool) optional_param('rtotals', 0, PARAM_BOOL)
+    );
 }
 
 $canmanage = report_roles::can_edit($report);
 $candownload = report_roles::can_download($context);
 
 // Breadcrumb: "Reportium" (a link to the Reports manager for those who manage reports).
-$PAGE->navbar->add(get_string('pluginname', 'local_reportium'),
-    $canmanage ? new moodle_url('/local/reportium/managereport.php', ['courseid' => $report->courseid]) : null);
+$PAGE->navbar->add(
+    get_string('pluginname', 'local_reportium'),
+    $canmanage ? new moodle_url('/local/reportium/managereport.php', ['courseid' => $report->courseid]) : null
+);
 $PAGE->set_title(format_string($report->name) . ' | ' . get_string('pluginname', 'local_reportium'));
 $PAGE->set_heading(get_string('productheading', 'local_reportium'));
 
@@ -133,8 +158,13 @@ if ($levelsdata['levels'] && in_array(optional_param('rpath', '', PARAM_RAW), ['
     try {
         $firstlevel = [
             'args' => $args,
-            'data' => \local_reportium\external\levels::level_data($report, $context, 0, [],
-                \local_reportium\external\levels::range($args['daterange'], $args['rangefrom'], $args['rangeto'])),
+            'data' => \local_reportium\external\levels::level_data(
+                $report,
+                $context,
+                0,
+                [],
+                \local_reportium\external\levels::range($args['daterange'], $args['rangefrom'], $args['rangeto'])
+            ),
         ];
     } catch (\moodle_exception $e) {
         // The view asks for it and shows the error in its place.
@@ -173,15 +203,20 @@ $appconfig = [
         'category' => (new moodle_url('/course/index.php'))->out(false) . '?categoryid={id}',
     ],
     // Periods of the data (for reports whose SQL uses %%STARTTIME%% / %%ENDTIME%%).
-    'ranges' => array_map(static fn($value, $label) => ['value' => (string) $value, 'label' => $label],
-        array_keys(\local_reportium\local\date_range::options()), \local_reportium\local\date_range::options()),
+    'ranges' => array_map(
+        static fn($value, $label) => ['value' => (string) $value, 'label' => $label],
+        array_keys(\local_reportium\local\date_range::options()),
+        \local_reportium\local\date_range::options()
+    ),
     // Chart types offered by this report (chosen when creating/editing it); empty = all.
     'views' => !empty($report->views) ? explode(',', $report->views) : [],
     // The levels (as local_reportium_get_levels returns them), so the first level loads without waiting for them.
     'levelsdata' => $levelsdata,
     // Column order dragged by the user, per level (a preference).
     'columnorder' => (object) (json_decode((string) get_user_preferences(
-        \local_reportium\local\exporter::ORDER_PREFERENCE . $report->id, '{}'), true) ?: []),
+        \local_reportium\local\exporter::ORDER_PREFERENCE . $report->id,
+        '{}'
+    ), true) ?: []),
     // Data of the first level (when the page opens on it), with the period it was read for.
     'firstlevel' => $firstlevel,
     // An assistant in the SQL Inspector offered by another plugin (Reportium Pro).

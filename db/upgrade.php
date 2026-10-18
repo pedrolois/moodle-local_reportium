@@ -61,8 +61,10 @@ function xmldb_local_reportium_upgrade($oldversion) {
         $rs = $DB->get_recordset('local_reportium', null, '', 'id, type, components');
         foreach ($rs as $report) {
             $querysql = \local_reportium\local\report_transfer::components_sql((string) $report->components);
-            if ($report->type === 'sql' && trim($querysql) !== ''
-                    && !$DB->record_exists('local_reportium_level', ['reportid' => $report->id, 'drilllevel' => 0])) {
+            if (
+                $report->type === 'sql' && trim($querysql) !== ''
+                    && !$DB->record_exists('local_reportium_level', ['reportid' => $report->id, 'drilllevel' => 0])
+            ) {
                 \local_reportium\local\level_service::save_root_sql((int) $report->id, $querysql);
             }
         }
@@ -130,8 +132,10 @@ function xmldb_local_reportium_upgrade($oldversion) {
 
     if ($oldversion < 2026100911) {
         // Settings that no longer exist: remote database, scheduled runs, write statements, table UI, CSV delimiter.
-        foreach (['dbhost', 'dbname', 'dbuser', 'dbpass', 'cron_hour', 'cron_minute', 'sqlsecurity', 'reporttableui',
-                'csvdelimiter', 'enable_drilldown'] as $name) {
+        foreach (
+            ['dbhost', 'dbname', 'dbuser', 'dbpass', 'cron_hour', 'cron_minute', 'sqlsecurity', 'reporttableui',
+                'csvdelimiter', 'enable_drilldown'] as $name
+        ) {
             unset_config($name, 'local_reportium');
         }
         upgrade_plugin_savepoint(true, 2026100911, 'local', 'reportium');

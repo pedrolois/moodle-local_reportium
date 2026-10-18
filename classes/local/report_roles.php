@@ -31,7 +31,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class report_roles {
-
     /** Table. */
     const TABLE = 'local_reportium_role';
 
@@ -106,8 +105,10 @@ class report_roles {
         if ($roleids) {
             // Only roles that exist.
             [$insql, $params] = $DB->get_in_or_equal($roleids);
-            $roleids = array_values(array_intersect($roleids, array_map('intval',
-                $DB->get_fieldset_select('role', 'id', "id $insql", $params))));
+            $roleids = array_values(array_intersect($roleids, array_map(
+                'intval',
+                $DB->get_fieldset_select('role', 'id', "id $insql", $params)
+            )));
         }
         $current = self::get($reportid);
         foreach (array_diff($current, $roleids) as $roleid) {
@@ -161,11 +162,13 @@ class report_roles {
         }
         if ((int) $report->courseid === (int) SITEID) {
             [$insql, $params] = $DB->get_in_or_equal($roleids);
-            return $DB->record_exists_sql("SELECT 1
+            return $DB->record_exists_sql(
+                "SELECT 1
                                              FROM {role_assignments} ra
                                              JOIN {context} ctx ON ctx.id = ra.contextid
                                             WHERE ra.userid = ? AND ra.roleid $insql AND ctx.contextlevel IN (?, ?)",
-                array_merge([$userid], $params, [CONTEXT_SYSTEM, CONTEXT_COURSECAT]));
+                array_merge([$userid], $params, [CONTEXT_SYSTEM, CONTEXT_COURSECAT])
+            );
         }
         foreach (get_user_roles(\context_course::instance($report->courseid), $userid, true) as $role) {
             if (in_array((int) $role->roleid, $roleids, true)) {
@@ -243,8 +246,10 @@ class report_roles {
      * @return bool
      */
     public static function can_view(stdClass $report, int $userid, context $context): bool {
-        if (has_capability('local/reportium:manage', $context, $userid)
-                || ((int) $report->ownerid === $userid && has_capability('local/reportium:create', $context, $userid))) {
+        if (
+            has_capability('local/reportium:manage', $context, $userid)
+                || ((int) $report->ownerid === $userid && has_capability('local/reportium:create', $context, $userid))
+        ) {
             return true;
         }
         if (empty($report->visible) || !has_capability('local/reportium:view', $context, $userid)) {

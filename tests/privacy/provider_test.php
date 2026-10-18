@@ -33,7 +33,6 @@ use core_privacy\tests\provider_testcase;
  * @covers     \local_reportium\privacy\provider
  */
 final class provider_test extends provider_testcase {
-
     /** @var \stdClass author of a report */
     private $author;
 
@@ -50,13 +49,15 @@ final class provider_test extends provider_testcase {
         $this->report = $gen->create_demo_report();
         $DB->set_field('local_reportium', 'ownerid', $this->author->id, ['id' => $this->report->id]);
         $DB->set_field('local_reportium_level', 'usermodified', $this->author->id, ['reportid' => $this->report->id]);
-        \local_reportium\local\report_roles::set((int) $this->report->id,
-            [(int) $DB->get_field('role', 'id', ['shortname' => 'manager'])]);
+        \local_reportium\local\report_roles::set(
+            (int) $this->report->id,
+            [(int) $DB->get_field('role', 'id', ['shortname' => 'manager'])]
+        );
     }
 
     public function test_metadata(): void {
         $items = provider::get_metadata(new \core_privacy\local\metadata\collection('local_reportium'))->get_collection();
-        $names = array_map(function($item) {
+        $names = array_map(function ($item) {
             return $item->get_name();
         }, $items);
         $this->assertContains('local_reportium', $names);
@@ -69,8 +70,10 @@ final class provider_test extends provider_testcase {
 
     public function test_contexts_and_users(): void {
         $context = \context_user::instance($this->author->id);
-        $this->assertSame([$context->id],
-            array_map('intval', provider::get_contexts_for_userid((int) $this->author->id)->get_contextids()));
+        $this->assertSame(
+            [$context->id],
+            array_map('intval', provider::get_contexts_for_userid((int) $this->author->id)->get_contextids())
+        );
         $other = $this->getDataGenerator()->create_user();
         $this->assertSame([], provider::get_contexts_for_userid((int) $other->id)->get_contextids());
 
@@ -137,8 +140,10 @@ final class provider_test extends provider_testcase {
 
         // A recipient has data too (the schedules they receive).
         $recipientcontext = \context_user::instance($recipient->id);
-        $this->assertSame([$recipientcontext->id],
-            array_map('intval', provider::get_contexts_for_userid((int) $recipient->id)->get_contextids()));
+        $this->assertSame(
+            [$recipientcontext->id],
+            array_map('intval', provider::get_contexts_for_userid((int) $recipient->id)->get_contextids())
+        );
         writer::reset();
         $this->export_context_data_for_user((int) $recipient->id, $recipientcontext, 'local_reportium');
         $received = writer::with_context($recipientcontext)->get_data([get_string('pluginname', 'local_reportium')]);
@@ -147,15 +152,18 @@ final class provider_test extends provider_testcase {
         // Deleting the recipient: out of the list. Deleting the author: their schedule goes, their versions are anonymised.
         provider::delete_data_for_user(new approved_contextlist($recipient, 'local_reportium', [$recipientcontext->id]));
         $this->assertSame([], \local_reportium\local\scheduler::recipient_lists(
-            $DB->get_record('local_reportium_schedule', ['id' => $scheduleid]))['users']);
+            $DB->get_record('local_reportium_schedule', ['id' => $scheduleid])
+        )['users']);
         provider::delete_data_for_user(new approved_contextlist($this->author, 'local_reportium', [$context->id]));
         $this->assertFalse($DB->record_exists('local_reportium_schedule', ['id' => $scheduleid]));
         $this->assertFalse($DB->record_exists('local_reportium_version', ['usermodified' => $this->author->id]));
     }
 
     public function test_column_order_preferences_are_declared_and_exported(): void {
-        $names = array_map(fn($item) => $item->get_name(),
-            provider::get_metadata(new \core_privacy\local\metadata\collection('local_reportium'))->get_collection());
+        $names = array_map(
+            fn($item) => $item->get_name(),
+            provider::get_metadata(new \core_privacy\local\metadata\collection('local_reportium'))->get_collection()
+        );
         $this->assertContains('local_reportium_columns', $names);
         set_user_preference('local_reportium_columns_5', '{"0":["b","a"]}', $this->author);
         set_user_preference('local_reportium_columns_9', '{"1":["x"]}', $this->author);

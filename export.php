@@ -42,5 +42,12 @@ if (!\local_reportium\local\report_roles::can_edit($report)) {
     throw new moodle_exception('badpermissions', 'local_reportium');
 }
 
-send_file(\local_reportium\local\report_transfer::export($report), \local_reportium\local\report_transfer::filename($report),
-    0, 0, true, true, 'application/json');
+send_file(
+    \local_reportium\local\report_transfer::export($report),
+    \local_reportium\local\report_transfer::filename($report),
+    0,
+    0,
+    true,
+    true,
+    'application/json'
+);

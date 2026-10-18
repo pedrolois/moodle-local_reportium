@@ -27,7 +27,6 @@ namespace local_reportium\admin;
  * @covers     \local_reportium\admin\setting_colour
  */
 final class settings_test extends \advanced_testcase {
-
     protected function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();
@@ -104,16 +103,20 @@ final class settings_test extends \advanced_testcase {
         // One tab per group of settings.
         $this->assertTrue(method_exists($page, 'get_tabs'));
         $tabs = $page->get_tabs();
-        $this->assertSame(['local_reportium_general', 'local_reportium_formats', 'local_reportium_ai'],
-            array_values(array_map(fn($tab) => $tab->name, $tabs)));
+        $this->assertSame(
+            ['local_reportium_general', 'local_reportium_formats', 'local_reportium_ai'],
+            array_values(array_map(fn($tab) => $tab->name, $tabs))
+        );
         $names = [];
         foreach ($tabs as $tab) {
             foreach ((array) $tab->settings as $setting) {
                 $names[] = $setting->name;
             }
         }
-        foreach (['progresskeywords', 'progresscolorlow', 'progresscolormid', 'progresscolorhigh', 'statekeywords', 'states',
-                'reportlimit'] as $name) {
+        foreach (
+            ['progresskeywords', 'progresscolorlow', 'progresscolormid', 'progresscolorhigh', 'statekeywords', 'states',
+                'reportlimit'] as $name
+        ) {
             $this->assertContains($name, $names);
         }
         foreach (['openai_api_key', 'anthropic_api_key', 'dbhost', 'sqlsecurity'] as $gone) {

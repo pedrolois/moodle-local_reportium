@@ -28,7 +28,6 @@ namespace local_reportium\local;
  * @covers     \schedule_form
  */
 final class schedule_helpers_test extends \advanced_testcase {
-
     /** @var \stdClass */
     private $report;
 
@@ -43,13 +42,19 @@ final class schedule_helpers_test extends \advanced_testcase {
         $generator->create_level($this->report->id, 0, "SELECT 1 AS id, 'A' AS name");
         $generator->create_level($this->report->id, 1, 'SELECT 1 AS id, %%PREVIOUSVALUE%% AS v');
         $generator->create_level($this->report->id, 2, 'SELECT 1 AS id, %%PREVIOUSVALUE%% AS w');
-        \core\di::get(\moodle_database::class)->set_field('local_reportium_level', 'label', 'Courses in {parent}',
-            ['reportid' => $this->report->id, 'drilllevel' => 1]);
+        \core\di::get(\moodle_database::class)->set_field(
+            'local_reportium_level',
+            'label',
+            'Courses in {parent}',
+            ['reportid' => $this->report->id, 'drilllevel' => 1]
+        );
     }
 
     public function test_level_names(): void {
-        $this->assertSame([0 => 'Level 1', 1 => 'Level 2: Courses in the row chosen in level 1', 2 => 'Level 3'],
-            scheduler::level_names((int) $this->report->id));
+        $this->assertSame(
+            [0 => 'Level 1', 1 => 'Level 2: Courses in the row chosen in level 1', 2 => 'Level 3'],
+            scheduler::level_names((int) $this->report->id)
+        );
         // A report without levels yet still offers level 1.
         $empty = $this->getDataGenerator()->get_plugin_generator('local_reportium')->create_report(['name' => 'Empty']);
         $this->assertSame([0 => 'Level 1'], scheduler::level_names((int) $empty->id));
@@ -72,8 +77,10 @@ final class schedule_helpers_test extends \advanced_testcase {
         $changed = scheduler::view_from_form(2, json_encode(json_decode($saved, true) + ['changed' => true]));
         $this->assertSame('', $changed['sort']);
         // Bad input: level 1, nothing else.
-        $this->assertSame(['level' => 0, 'steps' => [], 'search' => '', 'filters' => [], 'override' => [], 'sort' => ''],
-            scheduler::view_from_form(-3, 'not json'));
+        $this->assertSame(
+            ['level' => 0, 'steps' => [], 'search' => '', 'filters' => [], 'override' => [], 'sort' => ''],
+            scheduler::view_from_form(-3, 'not json')
+        );
     }
 
     public function test_view_summary(): void {
@@ -86,8 +93,10 @@ final class schedule_helpers_test extends \advanced_testcase {
     }
 
     public function test_external_addresses_of_the_form(): void {
-        $this->assertSame(['a@example.com', 'b@example.org', 'c@example.net'],
-            \schedule_form::split_emails(" a@example.com,b@example.org;\n\nc@example.net  a@example.com "));
+        $this->assertSame(
+            ['a@example.com', 'b@example.org', 'c@example.net'],
+            \schedule_form::split_emails(" a@example.com,b@example.org;\n\nc@example.net  a@example.com ")
+        );
         $this->assertSame([], \schedule_form::split_emails(''));
     }
 
@@ -113,10 +122,14 @@ final class schedule_helpers_test extends \advanced_testcase {
     public function test_recipient_lists_are_cleaned(): void {
         $schedule = (object) ['recipients' => json_encode(['users' => ['3', 3, 0, 'x', 5], 'cohorts' => [2, 2],
             'roles' => ['4'], 'emails' => [' a@example.com ', 'nope', 'a@example.com']])];
-        $this->assertSame(['users' => [3, 5], 'cohorts' => [2], 'roles' => [4], 'emails' => ['a@example.com']],
-            scheduler::recipient_lists($schedule));
-        $this->assertSame(['users' => [], 'cohorts' => [], 'roles' => [], 'emails' => []],
-            scheduler::recipient_lists((object) ['recipients' => 'broken']));
+        $this->assertSame(
+            ['users' => [3, 5], 'cohorts' => [2], 'roles' => [4], 'emails' => ['a@example.com']],
+            scheduler::recipient_lists($schedule)
+        );
+        $this->assertSame(
+            ['users' => [], 'cohorts' => [], 'roles' => [], 'emails' => []],
+            scheduler::recipient_lists((object) ['recipients' => 'broken'])
+        );
     }
 
     public function test_saving_sets_the_next_run_and_pausing_clears_it(): void {
