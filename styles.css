@@ -65,7 +65,8 @@
     top: calc(100% + 10px);
     right: 0;
     z-index: 30;
-    width: min(320px, 85vw);
+    width: 320px;
+    max-width: 85vw;
     padding: 0.95rem 1rem;
     border: 1px solid rgba(11, 110, 253, 0.16);
     border-radius: 16px;
@@ -88,190 +89,34 @@
     font-weight: 700;
 }
 
-@media (min-width: 1280px) {
-    .reportium-ui-compare-layout.has-compare {
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-main,
-    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
-        flex: 0 0 50%;
-        max-width: 50%;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart,
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
-        width: 100% !important;
-    }
-
-    .reportium-ui-chart {
-        width: 100% !important;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart {
-        max-width: 100% !important;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
-        display: flex !important;
-        flex-direction: column;
-    }
-
-    .reportium-ui-chart--compare {
-        height: 360px !important;
-    }
-}
-
-@media (min-width: 1024px) and (max-width: 1279px) {
-    .reportium-ui-compare-layout.has-compare {
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-main,
-    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
-        flex: 0 0 50%;
-        max-width: 50%;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart,
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
-        width: 100% !important;
-    }
-
-    .reportium-ui-chart {
-        width: 100% !important;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart {
-        max-width: 100% !important;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-compare-panel {
-        display: flex !important;
-        flex-direction: column;
-    }
-
-    .reportium-ui-chart--compare {
-        height: 320px !important;
-    }
-}
-
 @media (max-width: 1023px) {
-    .reportium-ui-chart-toolbar {
-        grid-template-columns: 1fr;
-        justify-items: stretch;
-    }
-
-    .reportium-ui-chart-toolbar .reportium-ui-breadcrumbs,
-    .reportium-ui-chart-toolbar .reportium-ui-toolbar-search,
-    .reportium-ui-chart-toolbar .reportium-ui-toolbar-meta {
-        justify-self: stretch;
-    }
-
-    .reportium-ui-toolbar-meta,
-    .reportium-ui-toolbar-actions,
-    .reportium-ui-toolbar-statuses {
-        align-items: flex-start;
-        justify-content: flex-start;
-    }
 
     .reportium-ui-toolbar-pill-status-title,
     .reportium-ui-toolbar-pill-status-value {
         text-align: left;
     }
 }
+
 @keyframes cr-chat-pulse {
-    0%,100% { box-shadow: 0 4px 20px rgba(11,110,253,0.45); }
-    50%      { box-shadow: 0 4px 30px rgba(11,110,253,0.70); }
+    0%,
+    100% {
+        box-shadow: 0 4px 20px rgba(11, 110, 253, 0.45);
+    }
+    50% {
+        box-shadow: 0 4px 30px rgba(11, 110, 253, 0.70);
+    }
 }
 
-.reportium-ui-chat-bubble {
-    max-width: 88%;
-    padding: 0.6rem 0.9rem;
-    border-radius: 16px;
-    font-size: 0.875rem;
-    line-height: 1.55;
-    word-break: break-word;
-}
-.reportium-ui-chat-bubble--ai {
-    background: #f0f4f8;
-    color: #1a2e3f;
-    border-radius: 4px 16px 16px 16px;
-    align-self: flex-start;
-}
-.reportium-ui-chat-bubble--ai pre {
-    background: #1e2a38;
-    color: #e2e8f0;
-    padding: 0.6rem 0.8rem;
-    border-radius: 8px;
-    overflow-x: auto;
-    font-size: 0.8rem;
-    margin: 0.4rem 0;
-}
-.reportium-ui-chat-bubble--ai code {
-    background: rgba(11,110,253,0.1);
-    color: #0b3558;
-    padding: 0.1em 0.35em;
-    border-radius: 4px;
-    font-size: 0.82em;
-}
-.reportium-ui-chat-bubble--ai pre code {
-    background: none;
-    color: inherit;
-    padding: 0;
-}
-.reportium-ui-chat-bubble--user {
-    background: linear-gradient(135deg, #0b6efd 0%, #0050cc 100%);
-    color: #fff;
-    border-radius: 16px 4px 16px 16px;
-    align-self: flex-end;
-}
-
-.reportium-ui-chat-typing {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 0.75rem 1rem;
-    min-width: 60px;
-}
-.reportium-ui-chat-typing span {
-    width: 7px;
-    height: 7px;
-    background: #8fa3b1;
-    border-radius: 50%;
-    animation: cr-chat-dot 1.2s infinite ease-in-out;
-}
-.reportium-ui-chat-typing span:nth-child(2) { animation-delay: 0.2s; }
-.reportium-ui-chat-typing span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes cr-chat-dot {
-    0%,80%,100% { transform: scale(0.6); opacity: 0.5; }
-    40%          { transform: scale(1);   opacity: 1;   }
-}
-
-@media (max-width: 480px) {
-    .reportium-ui-chat-panel {
-        width: 100vw;
-        border-radius: 0;
+    0%,
+    80%,
+    100% {
+        transform: scale(0.6);
+        opacity: 0.5;
     }
-    .reportium-ui-chat-header {
-        border-radius: 0;
-    }
-    .reportium-ui-chat-fab {
-        bottom: 1rem;
-        right: 1rem;
-    }
-}
-
-@media (min-width: 1024px) {
-    .reportium-ui-chart-wrapper:not(.reportium-ui-chart-wrapper--table) .reportium-ui-compare-layout.has-compare .reportium-ui-compare-main > .reportium-ui-chart,
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
-        height: 360px !important;
-    }
-
-    .reportium-ui-compare-layout.has-compare .reportium-ui-chart--compare {
-        margin-bottom: 0;
+    40% {
+        transform: scale(1);
+        opacity: 1;
     }
 }
 
@@ -414,9 +259,12 @@
     font-size: 0.85rem;
     margin: 0;
 }
+/* The theme's .form-check rules set a column layout and spacing: these settings rows need a row. */
 .reportium-check {
+    /* stylelint-disable-next-line declaration-no-important */
     flex-direction: row !important;
     align-items: center;
+    /* stylelint-disable-next-line declaration-no-important */
     gap: 0.35rem !important;
 }
 .reportium-settings-actions {
@@ -473,6 +321,8 @@
     background-color: #6c757d;
     white-space: nowrap;
 }
+
+/* stylelint-disable declaration-no-important -- print: the report has to override the theme and Moodle's page. */
 @media print {
     .reportium-progress,
     .reportium-progress-bar,
@@ -481,6 +331,7 @@
         print-color-adjust: exact;
     }
 }
+/* stylelint-enable declaration-no-important */
 .reportium-th-sort {
     display: inline-flex;
     align-items: center;
@@ -501,17 +352,21 @@
     opacity: 1;
     color: var(--rp-primary);
 }
+
+/* stylelint-disable declaration-no-important -- print: the report has to override the theme and Moodle's page. */
 @media print {
     .reportium-th-sort .fa-sort {
         display: none;
     }
 }
+/* stylelint-enable declaration-no-important */
 .reportium-compare {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.25rem;
     align-items: start;
 }
+
 @media (max-width: 991px) {
     .reportium-compare {
         grid-template-columns: 1fr;
@@ -526,6 +381,7 @@
 }
 /* Compare: both columns stretch to the same height and the totals sit at the bottom, aligned. */
 .reportium-compare {
+    /* stylelint-disable-next-line declaration-no-important */
     align-items: stretch !important;
 }
 .reportium-compare .reportium-pane {
@@ -615,10 +471,7 @@
     max-height: 340px;
     overflow-y: auto;
 }
-.reportium-sqlchat-messages .reportium-ui-chat-bubble {
-    max-width: 100%;
-    font-size: 0.85rem;
-}
+
 .reportium-sqlchat-messages pre {
     white-space: pre-wrap;
     word-break: break-word;
@@ -726,6 +579,7 @@
 }
 
 /* Print report: report title + description, current level, charts, tables and totals only. */
+/* stylelint-disable declaration-no-important -- print: the report has to override the theme and Moodle's page. */
 @media print {
     body:has(#printablediv > .reportium-app) nav.navbar,
     body:has(#printablediv > .reportium-app) #page-header,
@@ -736,8 +590,6 @@
     body:has(#printablediv > .reportium-app) .drawer-toggles,
     body:has(#printablediv > .reportium-app) #page-footer,
     body:has(#printablediv > .reportium-app) .btn-footer-popover,
-    body:has(#printablediv > .reportium-app) #reportium-ui-chat-fab,
-    body:has(#printablediv > .reportium-app) #reportium-ui-chat-panel,
     body:has(#printablediv > .reportium-app) .reportium-crumb-home,
     body:has(#printablediv > .reportium-app) .reportium-crumb-home + .reportium-crumb-sep,
     body:has(#printablediv > .reportium-app) .reportium-pane-close {
@@ -796,7 +648,7 @@
     .reportium-table {
         width: 100% !important;
         table-layout: auto;
-        font-size: 8pt;
+        font-size: 11px;
     }
     .reportium-table th,
     .reportium-table td {
@@ -806,6 +658,7 @@
         word-break: break-word;
     }
 }
+/* stylelint-enable declaration-no-important */
 
 /* Report navigation for editors: Report, Settings, Access, Layout... and All reports on the right. */
 .reportium-nav {
@@ -985,12 +838,15 @@
     flex-direction: column;
     gap: 0.35rem;
 }
+
+/* stylelint-disable declaration-no-important -- print: the report has to override the theme and Moodle's page. */
 @media print {
     .reportium-th-filter,
     .reportium-col-filter {
         display: none !important;
     }
 }
+/* stylelint-enable declaration-no-important */
 
 /* Table pager. */
 .reportium-pager {
@@ -1450,6 +1306,7 @@ input[type="color"].reportium-admin-color {
 }
 
 /* Printing: no gears, no "+" card, no popovers of the cards. */
+/* stylelint-disable declaration-no-important -- print: the report has to override the theme and Moodle's page. */
 @media print {
     .reportium-kpi-gear,
     .reportium-kpi-add,
@@ -1458,6 +1315,7 @@ input[type="color"].reportium-admin-color {
         display: none !important;
     }
 }
+/* stylelint-enable declaration-no-important */
 
 /* Calculated columns and column order. */
 .reportium-table th[draggable="true"] {
@@ -1470,8 +1328,14 @@ input[type="color"].reportium-admin-color {
 .reportium-table th.is-dragging,
 .reportium-table td.is-lifted {
     opacity: 0.25;
-    background: repeating-linear-gradient(45deg, transparent, transparent 6px,
-        color-mix(in srgb, var(--rp-primary) 10%, transparent) 6px, color-mix(in srgb, var(--rp-primary) 10%, transparent) 12px);
+    background:
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 6px,
+            color-mix(in srgb, var(--rp-primary) 10%, transparent) 6px,
+            color-mix(in srgb, var(--rp-primary) 10%, transparent) 12px
+        );
     transition: opacity 0.15s ease;
 }
 /* The column under the cursor: raised, tilted, with a shadow. */
@@ -1501,6 +1365,7 @@ input[type="color"].reportium-admin-color {
     box-shadow: inset -4px 0 0 var(--rp-primary);
     animation: reportium-drop-pulse 0.8s ease-in-out infinite;
 }
+
 @keyframes reportium-drop-pulse {
     50% {
         background: color-mix(in srgb, var(--rp-primary) 10%, transparent);
@@ -1510,6 +1375,7 @@ input[type="color"].reportium-admin-color {
 .reportium-table .is-dropped {
     animation: reportium-drop-land 0.6s ease-out;
 }
+
 @keyframes reportium-drop-land {
     0% {
         transform: translateY(-6px);
@@ -1521,13 +1387,15 @@ input[type="color"].reportium-admin-color {
         box-shadow: none;
     }
 }
+
 @media (prefers-reduced-motion: reduce) {
     .reportium-table .is-dropped,
     .reportium-table th.is-drop-before,
     .reportium-table th.is-drop-after {
         animation: none;
     }
-}.reportium-table th.is-calculated .reportium-th-sort {
+}
+.reportium-table th.is-calculated .reportium-th-sort {
     font-style: italic;
 }
 .reportium-calc-popover {
