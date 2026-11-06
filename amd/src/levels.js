@@ -27,6 +27,7 @@
 
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
+import Templates from 'core/templates';
 import {getStrings} from 'core/str';
 import AiHelp from 'local_reportium/aihelp';
 import {setUserPreference} from 'core_user/repository';
@@ -1009,48 +1010,51 @@ class ReportApp {
     }
 
     /**
-     * View switcher, search, compare and freshness (the row counters sit above each table).
+     * View switcher, search, compare and freshness (the row counters sit above each table): template
+     * local_reportium/toolbar. Only the latest render reaches the page.
+     *
+     * @returns {Promise}
      */
     renderToolbar() {
         const view = this.view();
-        const views = this.allowedViews().map((v) => `<button type="button"
-            class="reportium-view-btn${v === view ? ' is-active' : ''}" data-action="view" data-view="${v}"
-            aria-pressed="${v === view}">${esc(this.str['ui_' + v])}</button>`).join('');
         const fresh = this.payload.freshnessminutes > 0 && this.payload.cached
             ? this.str.ui_cached.replace('{$a}', this.payload.freshnessminutes) : this.str.ui_live;
+        const context = {
+            views: this.allowedViews().map((v) => ({value: v, label: this.str['ui_' + v], active: v === view})),
+            searchlabel: this.str.ui_search,
+            search: this.state.search,
+            period: this.periodContext(),
+            compare: this.compareContext(),
+            slow: this.slowPillContext(),
+            freshness: this.config.showfreshness === false ? false : {
+                text: fresh,
+                explain: this.str.ui_freshness_explain,
+                title: this.str.ui_freshness_title,
+                live: this.str.ui_freshness_live,
+                cached: this.str.ui_freshness_cached,
+            },
+        };
         const toolbar = this.root.querySelector('[data-region="toolbar"]');
-        toolbar.innerHTML = `
-            <div class="reportium-views" role="group">${views}</div>
-            <input type="search" class="form-control reportium-search" data-region="search"
-                placeholder="${esc(this.str.ui_search)}" value="${esc(this.state.search)}">
-            ${this.periodHtml()}
-            ${this.compareSelectHtml()}
-            <span class="reportium-toolbar-end">${this.slowPillHtml()}
-            ${this.config.showfreshness === false ? '' : `<span class="reportium-ui-view-freshness reportium-freshness">
-                <span class="reportium-ui-toolbar-pill reportium-ui-toolbar-pill-status">
-                    <span class="reportium-ui-toolbar-pill-status-value" data-region="freshness">${esc(fresh)}
-                        <button type="button" class="reportium-ui-help-trigger" data-action="freshness-help"
-                            aria-label="${esc(this.str.ui_freshness_explain)}" aria-expanded="false">i</button></span>
-                    <span class="reportium-ui-help-popover" data-region="freshness-help" hidden>
-                        <strong>${esc(this.str.ui_freshness_title)}</strong>
-                        ${esc(this.str.ui_freshness_live)}<br><br>${esc(this.str.ui_freshness_cached)}</span>
-                </span>
-            </span>`}</span>`;
+        const request = (this.toolbarRequest = (this.toolbarRequest || 0) + 1);
+        return Templates.renderForPromise('local_reportium/toolbar', context).then(({html, js}) => {
+            if (request === this.toolbarRequest) {
+                Templates.replaceNodeContents(toolbar, html, js);
+            }
+            return null;
+        }).catch(Notification.exception);
     }
 
     /**
      * Period of the data (reports whose SQL uses %%STARTTIME%% / %%ENDTIME%%): presets, custom dates, and
      * "Compare with the previous period".
      *
-     * @returns {String}
+     * @returns {Object|Boolean} context of the period in local_reportium/toolbar, false when not shown
      */
-    periodHtml() {
+    periodContext() {
         if (!this.usesdates) {
-            return '';
+            return false;
         }
         const range = this.state.range;
-        const options = (this.config.ranges || []).map((o) => `<option value="${esc(o.value)}"
-            ${o.value === (range.preset || '') ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
         const day = (ts) => {
             if (!ts) {
                 return '';
@@ -1058,40 +1062,36 @@ class ReportApp {
             const d = new Date(ts * 1000);
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         };
-        const custom = range.preset === 'custom' ? `
-            <input type="date" class="form-control form-control-sm" data-region="range-from" value="${day(range.from)}"
-                aria-label="${esc(this.str.ui_rangefrom)}" title="${esc(this.str.ui_rangefrom)}">
-            <input type="date" class="form-control form-control-sm" data-region="range-to" value="${day(range.to)}"
-                aria-label="${esc(this.str.ui_rangeto)}" title="${esc(this.str.ui_rangeto)}">` : '';
-        const dates = this.payload.rangelabel && range.preset !== 'custom'
-            ? `<span class="reportium-period-dates" data-region="range-label">${esc(this.payload.rangelabel)}</span>` : '';
-        const compare = range.preset ? `<label class="reportium-period-compare">
-            <input type="checkbox" data-region="range-prev"${this.state.prev ? ' checked' : ''}>
-            ${esc(this.str.ui_comparewithprevious)}</label>` : '';
-        return `<span class="reportium-period" data-region="period">
-            <i class="fa fa-calendar" aria-hidden="true"></i>
-            <select class="form-control form-control-sm" data-region="range" aria-label="${esc(this.str.ui_period)}">
-                ${options}</select>${custom}${dates}${compare}</span>`;
+        return {
+            label: this.str.ui_period,
+            options: (this.config.ranges || []).map((o) => ({
+                value: o.value, label: o.label, selected: o.value === (range.preset || ''),
+            })),
+            custom: range.preset === 'custom' ? {
+                from: day(range.from), to: day(range.to),
+                fromlabel: this.str.ui_rangefrom, tolabel: this.str.ui_rangeto,
+            } : false,
+            dates: this.payload.rangelabel && range.preset !== 'custom' ? this.payload.rangelabel : '',
+            previous: range.preset ? {label: this.str.ui_comparewithprevious, checked: !!this.state.prev} : false,
+        };
     }
 
     /**
      * "Compare with…" selector (siblings of the current item), only below the root.
      *
-     * @returns {String}
+     * @returns {Object|Boolean} context of the selector in local_reportium/toolbar, false when not shown
      */
-    compareSelectHtml() {
+    compareContext() {
         const options = this.siblingOptions();
         if (!options.length) {
-            return '';
+            return false;
         }
         const chosen = this.state.compare ? this.state.compare.value : '';
-        const items = options.map((o) => `<option value="${esc(o.value)}"${o.value === chosen ? ' selected' : ''}>
-            ${esc(o.label)}</option>`).join('');
-        const clear = this.state.compare ? `<button type="button" class="btn btn-sm btn-outline-primary"
-            data-action="clear-compare">${esc(this.str.ui_clear)}</button>` : '';
-        return `<select class="form-control form-control-sm reportium-compare-select" data-region="compare"
-            aria-label="${esc(this.str.ui_compare)}">
-            <option value="">${esc(this.str.ui_compare)}</option>${items}</select>${clear}`;
+        return {
+            label: this.str.ui_compare,
+            options: options.map((o) => ({value: o.value, label: o.label, selected: o.value === chosen})),
+            clear: this.state.compare ? this.str.ui_clear : '',
+        };
     }
 
     /**
@@ -1197,23 +1197,21 @@ class ReportApp {
      * Slow query pill of the toolbar, next to "Live data": how long the level took; its popover lists the tips
      * (only sent to those who can change the SQL, when the level was slow).
      *
-     * @returns {String}
+     * @returns {Object|Boolean} context of the pill in local_reportium/toolbar, false when not shown
      */
-    slowPillHtml() {
+    slowPillContext() {
         const payload = this.payload || {};
         if (!payload.slowtips || !payload.slowtips.length) {
-            return '';
+            return false;
         }
         const seconds = ((payload.executionms || 0) / 1000).toFixed(1);
-        const tips = payload.slowtips.map((tip) => `<li>${esc(tip)}</li>`).join('');
-        return `<span class="reportium-slowpill" data-region="slow-pill">
-            <button type="button" class="reportium-ui-toolbar-pill reportium-slowpill-button" data-action="slow-help"
-                aria-expanded="false"><i class="fa fa-gauge-high fa-tachometer" aria-hidden="true"></i>
-                ${esc(this.str.ui_slowbadge)} · ${esc(seconds)} s</button>
-            <span class="reportium-ui-help-popover reportium-slowpill-popover" data-region="slow-help" hidden>
-                <strong>${esc(this.str.ui_slowquery.replace('{$a}', seconds))}</strong><br>
-                ${esc(this.str.ui_slowtips)}<ul class="mb-0">${tips}</ul></span>
-        </span>`;
+        return {
+            badge: this.str.ui_slowbadge,
+            seconds: seconds,
+            title: this.str.ui_slowquery.replace('{$a}', seconds),
+            intro: this.str.ui_slowtips,
+            tips: payload.slowtips.map(String),
+        };
     }
 
     /**

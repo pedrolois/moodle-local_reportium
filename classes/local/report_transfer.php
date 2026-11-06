@@ -143,6 +143,7 @@ class report_transfer {
         } else {
             $data = self::read_xml($content);
         }
+        self::check_sql($data, $courseid);
         return self::create($data, $courseid, $userid);
     }
 
@@ -174,11 +175,16 @@ class report_transfer {
         } else {
             $items = array_filter(array_map([self::class, 'row_data'], self::csv_rows($content)));
         }
+        $items = array_filter($items, static function ($data): bool {
+            return is_array($data['report'] ?? null) && trim((string) ($data['report']['name'] ?? '')) !== '';
+        });
+        // Every report is checked before any is created: a refused file creates nothing.
+        foreach ($items as $data) {
+            self::check_sql($data, $courseid);
+        }
         $ids = [];
         foreach ($items as $data) {
-            if (is_array($data['report'] ?? null) && trim((string) ($data['report']['name'] ?? '')) !== '') {
-                $ids[] = self::create($data, $courseid, $userid);
-            }
+            $ids[] = self::create($data, $courseid, $userid);
         }
         if (!$ids) {
             throw new moodle_exception('errorimporting', 'local_reportium');
@@ -290,6 +296,39 @@ class report_transfer {
             }
         }
         return $items;
+    }
+
+    /**
+     * Check the SQL of a report to import exactly like the SQL editor does: the user must be allowed to write SQL
+     * (local/reportium:writesql) and every level must pass the same validation as when it is saved.
+     *
+     * @param array $data report file data
+     * @param int $courseid course of the new report
+     * @return void
+     * @throws \required_capability_exception when the file holds SQL and the user may not write SQL
+     * @throws moodle_exception errorimportingsql when the SQL of a level is refused
+     */
+    protected static function check_sql(array $data, int $courseid): void {
+        $levels = array_filter((array) ($data['levels'] ?? []), static function ($level): bool {
+            return is_array($level) && trim((string) ($level['sqlquery'] ?? '')) !== '';
+        });
+        if (!$levels) {
+            return;
+        }
+        $context = (int) $courseid === (int) SITEID ? \context_system::instance() : \context_course::instance($courseid);
+        require_capability('local/reportium:writesql', $context);
+        $report = (object) ['courseid' => $courseid];
+        foreach ($levels as $index => $level) {
+            $drilllevel = max(0, (int) ($level['level'] ?? $index));
+            $error = report_data_helper::validate_level_sql($report, $drilllevel, trim((string) $level['sqlquery']));
+            if ($error !== null) {
+                throw new moodle_exception('errorimportingsql', 'local_reportium', '', (object) [
+                    'name' => s(trim((string) $data['report']['name'])),
+                    'level' => $drilllevel + 1,
+                    'error' => s($error),
+                ]);
+            }
+        }
     }
 
     /**

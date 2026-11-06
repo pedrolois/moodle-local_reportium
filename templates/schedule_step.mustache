@@ -1,0 +1,45 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/schedule_step
+
+    One step of the drill-down path of a scheduled email: the rows of a level to choose from. Rendered from
+    JavaScript (local_reportium/schedule_form).
+
+    Context variables required for this template:
+    * id - Id of the select
+    * index - Level index (0 = level 1)
+    * label - Name of the level
+    * choose - Label of the empty option
+    * options - [{value, label, selected}]
+
+    Example context (json):
+    {
+        "id": "reportium-schedule-step-0",
+        "index": 0,
+        "label": "Courses",
+        "choose": "Choose...",
+        "options": [{"value": "2", "label": "Course A", "selected": true}]
+    }
+}}
+<div class="mb-2">
+    <label for="{{id}}" class="d-block small text-muted mb-1">{{label}}</label>
+    <select id="{{id}}" class="custom-select form-select" data-step="{{index}}">
+        <option value="">{{choose}}</option>
+        {{#options}}<option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/options}}
+    </select>
+</div>

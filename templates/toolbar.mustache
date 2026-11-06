@@ -1,0 +1,104 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/toolbar
+
+    Toolbar of a report level: view switcher, search, period, "Compare with…", slow query pill and data freshness.
+    Rendered from JavaScript (local_reportium/levels); its events are handled on the report root.
+
+    Context variables required for this template:
+    * views - [{value, label, active}]
+    * searchlabel - Placeholder of the search box
+    * search - Current search
+    * period - false, or an object: label, options [{value, label, selected}], custom (false or from, to, fromlabel, tolabel),
+      dates, previous (false or label, checked)
+    * compare - false, or {label, options: [{value, label, selected}], clear}
+    * slow - false, or {badge, seconds, title, intro, tips: [string]}
+    * freshness - false, or {text, explain, title, live, cached}
+
+    Example context (json):
+    {
+        "views": [{"value": "bar", "label": "Bar", "active": true}, {"value": "table", "label": "Table", "active": false}],
+        "searchlabel": "Search",
+        "search": "",
+        "period": false,
+        "compare": false,
+        "slow": false,
+        "freshness": {"text": "Live data", "explain": "What is this?", "title": "Data freshness", "live": "Live.",
+            "cached": "Cached."}
+    }
+}}
+<div class="reportium-views" role="group">
+    {{#views}}
+    <button type="button" class="reportium-view-btn{{#active}} is-active{{/active}}" data-action="view"
+        data-view="{{value}}" aria-pressed="{{#active}}true{{/active}}{{^active}}false{{/active}}">{{label}}</button>
+    {{/views}}
+</div>
+<input type="search" class="form-control reportium-search" data-region="search" placeholder="{{searchlabel}}"
+    value="{{search}}">
+{{#period}}
+<span class="reportium-period" data-region="period">
+    <i class="fa fa-calendar" aria-hidden="true"></i>
+    <select class="form-control form-control-sm" data-region="range" aria-label="{{label}}">
+        {{#options}}<option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/options}}
+    </select>
+    {{#custom}}
+    <input type="date" class="form-control form-control-sm" data-region="range-from" value="{{from}}"
+        aria-label="{{fromlabel}}" title="{{fromlabel}}">
+    <input type="date" class="form-control form-control-sm" data-region="range-to" value="{{to}}"
+        aria-label="{{tolabel}}" title="{{tolabel}}">
+    {{/custom}}
+    {{#dates}}<span class="reportium-period-dates" data-region="range-label">{{dates}}</span>{{/dates}}
+    {{#previous}}
+    <label class="reportium-period-compare">
+        <input type="checkbox" data-region="range-prev"{{#checked}} checked{{/checked}}> {{label}}</label>
+    {{/previous}}
+</span>
+{{/period}}
+{{#compare}}
+<select class="form-control form-control-sm reportium-compare-select" data-region="compare" aria-label="{{label}}">
+    <option value="">{{label}}</option>
+    {{#options}}<option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/options}}
+</select>
+{{#clear}}
+<button type="button" class="btn btn-sm btn-outline-primary" data-action="clear-compare">{{clear}}</button>
+{{/clear}}
+{{/compare}}
+<span class="reportium-toolbar-end">
+    {{#slow}}
+    <span class="reportium-slowpill" data-region="slow-pill">
+        <button type="button" class="reportium-ui-toolbar-pill reportium-slowpill-button" data-action="slow-help"
+            aria-expanded="false"><i class="fa fa-gauge-high fa-tachometer" aria-hidden="true"></i>
+            {{badge}} · {{seconds}} s</button>
+        <span class="reportium-ui-help-popover reportium-slowpill-popover" data-region="slow-help" hidden>
+            <strong>{{title}}</strong><br>
+            {{intro}}<ul class="mb-0">{{#tips}}<li>{{.}}</li>{{/tips}}</ul></span>
+    </span>
+    {{/slow}}
+    {{#freshness}}
+    <span class="reportium-ui-view-freshness reportium-freshness">
+        <span class="reportium-ui-toolbar-pill reportium-ui-toolbar-pill-status">
+            <span class="reportium-ui-toolbar-pill-status-value" data-region="freshness">{{text}}
+                <button type="button" class="reportium-ui-help-trigger" data-action="freshness-help"
+                    aria-label="{{explain}}" aria-expanded="false">i</button></span>
+            <span class="reportium-ui-help-popover" data-region="freshness-help" hidden>
+                <strong>{{title}}</strong>
+                {{live}}<br><br>{{cached}}</span>
+        </span>
+    </span>
+    {{/freshness}}
+</span>

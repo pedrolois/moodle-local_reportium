@@ -152,8 +152,11 @@ function xmldb_local_reportium_upgrade($oldversion) {
             }
         }
         // Template goals are not used.
-        $DB->delete_records_select('config_plugins', "plugin = 'local_reportium' AND " .
-            $DB->sql_like('name', ':name'), ['name' => 'reporttemplategoal\_report\_%']);
+        foreach (array_keys((array) get_config('local_reportium')) as $name) {
+            if (strpos($name, 'reporttemplategoal_report_') === 0) {
+                unset_config($name, 'local_reportium');
+            }
+        }
         upgrade_plugin_savepoint(true, 2026100912, 'local', 'reportium');
     }
 
@@ -262,8 +265,13 @@ function xmldb_local_reportium_upgrade($oldversion) {
 
     if ($oldversion < 2026101010) {
         // The PNG of the chart becomes an option of each report: those that offered downloads keep it.
-        $DB->execute("UPDATE {local_reportium} SET export = " . $DB->sql_concat('export', "'png,'") .
-            " WHERE export IS NOT NULL AND export <> '' AND export NOT LIKE '%png%'");
+        $reports = $DB->get_records_select_menu('local_reportium', "export IS NOT NULL AND export <> ''", [], '',
+            'id, export');
+        foreach ($reports as $id => $export) {
+            if (strpos($export, 'png') === false) {
+                $DB->set_field('local_reportium', 'export', $export . 'png,', ['id' => $id]);
+            }
+        }
         upgrade_plugin_savepoint(true, 2026101010, 'local', 'reportium');
     }
 

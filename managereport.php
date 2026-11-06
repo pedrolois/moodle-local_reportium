@@ -56,7 +56,11 @@ $PAGE->set_pagelayout('incourse');
 
 $importform = $cantransfer ? new import_form(null, $course->id) : null;
 if ($importform && $importform->get_data() && ($content = $importform->get_file_content('userfile'))) {
-    $ids = report_transfer::import_many($content, (int) $course->id, (int) $USER->id);
+    try {
+        $ids = report_transfer::import_many($content, (int) $course->id, (int) $USER->id);
+    } catch (moodle_exception $e) {
+        redirect($PAGE->url, $e->getMessage(), null, \core\output\notification::NOTIFY_ERROR);
+    }
     redirect(
         $PAGE->url,
         get_string('reportsimported', 'local_reportium', count($ids)),
