@@ -24,6 +24,7 @@
 
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
+import Templates from 'core/templates';
 
 /**
  * Escape text for HTML.
@@ -118,16 +119,15 @@ export const init = (config) => {
             }
             return rowsOf(index).then((options) => {
                 const chosen = steps[index] ? String(steps[index].v) : '';
-                const id = `reportium-schedule-step-${index}`;
-                const items = options.map((o) => `<option value="${esc(o.value)}"${o.value === chosen ? ' selected' : ''}>
-                    ${esc(o.label)}</option>`).join('');
-                const wrapper = document.createElement('div');
-                wrapper.className = 'mb-2';
-                wrapper.innerHTML = `<label for="${id}" class="d-block small text-muted mb-1">
-                        ${esc(config.levels[index] ?? index + 1)}</label>
-                    <select id="${id}" class="custom-select form-select" data-step="${index}">
-                        <option value="">${esc(config.choose)}</option>${items}</select>`;
-                region.appendChild(wrapper);
+                return Templates.renderForPromise('local_reportium/schedule_step', {
+                    id: `reportium-schedule-step-${index}`,
+                    index: index,
+                    label: String(config.levels[index] ?? index + 1),
+                    choose: config.choose,
+                    options: options.map((o) => ({value: o.value, label: o.label, selected: o.value === chosen})),
+                });
+            }).then(({html, js}) => {
+                Templates.appendNodeContents(region, html, js);
                 return next(index + 1);
             });
         };

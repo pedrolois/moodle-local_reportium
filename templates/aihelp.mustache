@@ -1,0 +1,58 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/aihelp
+
+    Contents of the AI help panel of the SQL Inspector when the site has no AI provider: the instructions file of the
+    report to copy or download. Rendered from JavaScript (local_reportium/aihelp).
+
+    Context variables required for this template:
+    * title - Heading
+    * text - What the file is for
+    * admintext - HTML from a language string for site administrators (how to set up an AI provider), or empty
+    * copy - Label of the copy button
+    * download - Label of the download button
+    * usesql - How to use the SQL the AI writes
+    * example - Example question, or empty
+
+    Example context (json):
+    {
+        "title": "Write SQL with AI",
+        "text": "Copy the instructions file of this report into any AI chat.",
+        "admintext": "",
+        "copy": "Copy",
+        "download": "Download",
+        "usesql": "Paste the SQL it writes in the editor.",
+        "example": "Courses with more than 10 participants"
+    }
+}}
+<div class="reportium-sqlchat-header"><i class="fa fa-magic" aria-hidden="true"></i>
+    <div><strong>{{title}}</strong></div></div>
+<p class="reportium-aihelp-text">{{text}}</p>
+{{#admintext}}<p class="reportium-aihelp-admin small">{{{admintext}}}</p>{{/admintext}}
+<div class="reportium-aihelp-actions">
+    <button type="button" class="btn btn-sm btn-primary" data-action="ai-help-copy">
+        <i class="fa fa-copy" aria-hidden="true"></i> {{copy}}</button>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-action="ai-help-download">
+        <i class="fa fa-download" aria-hidden="true"></i> {{download}}</button>
+</div>
+<p class="small text-muted mb-1">{{usesql}}</p>
+{{#example}}
+<p class="small mb-0 reportium-aihelp-example">
+    <i class="fa fa-lightbulb-o fa-lightbulb" aria-hidden="true"></i> {{example}}</p>
+{{/example}}
+<div class="small text-success" data-region="ai-help-status" role="status"></div>

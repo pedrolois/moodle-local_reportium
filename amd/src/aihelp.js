@@ -23,15 +23,8 @@
  */
 
 import Ajax from 'core/ajax';
-
-/**
- * Escape text for HTML.
- *
- * @param {String} s
- * @returns {String}
- */
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+import Notification from 'core/notification';
+import Templates from 'core/templates';
 
 /**
  * Without an AI provider on the site: an instructions file (AGENTS.md) of the report to copy or download and
@@ -47,25 +40,21 @@ export default class AiHelp {
     constructor(config, getLevel) {
         this.config = config;
         this.getLevel = getLevel;
-        const c = config;
         this.element = document.createElement('div');
         this.element.className = 'reportium-sqlchat reportium-aihelp';
         this.element.setAttribute('data-region', 'ai-help');
-        this.element.innerHTML = `
-            <div class="reportium-sqlchat-header"><i class="fa fa-magic" aria-hidden="true"></i>
-                <div><strong>${esc(c.title)}</strong></div></div>
-            <p class="reportium-aihelp-text">${esc(c.text)}</p>
-            ${c.admintext ? `<p class="reportium-aihelp-admin small">${c.admintext}</p>` : ''}
-            <div class="reportium-aihelp-actions">
-                <button type="button" class="btn btn-sm btn-primary" data-action="ai-help-copy">
-                    <i class="fa fa-copy" aria-hidden="true"></i> ${esc(c.copy)}</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-action="ai-help-download">
-                    <i class="fa fa-download" aria-hidden="true"></i> ${esc(c.download)}</button>
-            </div>
-            <p class="small text-muted mb-1">${esc(c.usesql)}</p>
-            ${c.example ? `<p class="small mb-0 reportium-aihelp-example">
-                <i class="fa fa-lightbulb-o fa-lightbulb" aria-hidden="true"></i> ${esc(c.example)}</p>` : ''}
-            <div class="small text-success" data-region="ai-help-status" role="status"></div>`;
+        Templates.renderForPromise('local_reportium/aihelp', {
+            title: config.title,
+            text: config.text,
+            admintext: config.admintext || '',
+            copy: config.copy,
+            download: config.download,
+            usesql: config.usesql,
+            example: config.example || '',
+        }).then(({html, js}) => {
+            Templates.replaceNodeContents(this.element, html, js);
+            return null;
+        }).catch(Notification.exception);
         this.element.addEventListener('click', (e) => {
             if (e.target.closest('[data-action="ai-help-copy"]')) {
                 this.file().then((file) => this.copy(file.content)).catch(() => null);
