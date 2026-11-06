@@ -1298,8 +1298,13 @@ class report_templates {
             }
             [$insql, $params] = $DB->get_in_or_equal(array_unique($names), SQL_PARAMS_NAMED);
             $params['siteid'] = SITEID;
-            $DB->set_field_select('local_reportium', 'template', $key,
-                "template IS NULL AND courseid = :siteid AND name $insql", $params);
+            $DB->set_field_select(
+                'local_reportium',
+                'template',
+                $key,
+                "template IS NULL AND courseid = :siteid AND name $insql",
+                $params
+            );
         }
     }
 
