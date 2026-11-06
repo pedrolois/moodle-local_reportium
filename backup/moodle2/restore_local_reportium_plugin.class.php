@@ -95,8 +95,8 @@ class restore_local_reportium_plugin extends restore_local_plugin {
         }
         $drilllevel = max(0, (int) $data->drilllevel);
         $sql = trim((string) $data->sqlquery);
-        $error = report_data_helper::validate_level_sql((object) ['courseid' => $this->task->get_courseid()], $drilllevel,
-            $sql);
+        $report = (object) ['courseid' => $this->task->get_courseid()];
+        $error = report_data_helper::validate_level_sql($report, $drilllevel, $sql);
         if ($error !== null) {
             $this->refused[$reportid] = true;
             $this->step->log('local_reportium: report not restored, the SQL of level ' . ($drilllevel + 1) . ' is not allowed: ' .

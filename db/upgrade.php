@@ -265,8 +265,13 @@ function xmldb_local_reportium_upgrade($oldversion) {
 
     if ($oldversion < 2026101010) {
         // The PNG of the chart becomes an option of each report: those that offered downloads keep it.
-        $reports = $DB->get_records_select_menu('local_reportium', "export IS NOT NULL AND export <> ''", [], '',
-            'id, export');
+        $reports = $DB->get_records_select_menu(
+            'local_reportium',
+            "export IS NOT NULL AND export <> ''",
+            [],
+            '',
+            'id, export'
+        );
         foreach ($reports as $id => $export) {
             if (strpos($export, 'png') === false) {
                 $DB->set_field('local_reportium', 'export', $export . 'png,', ['id' => $id]);
