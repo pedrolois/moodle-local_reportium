@@ -1,0 +1,88 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/calc_popover
+
+    Popover to add, change or remove a calculated column: its name, its formula (with a chip per numeric column) and
+    its format. Rendered from JavaScript (local_reportium/levels); its events are handled on the report root.
+
+    Context variables required for this template:
+    * title - Title of the popover
+    * namelabel - Label of the name field
+    * name - Name of the column
+    * formulalabel - Label of the formula field
+    * formula - Formula of the column
+    * chips - false, or {label, columns: [{key, label}]}
+    * help - Help of the formula
+    * formatlabel - Label of the format select
+    * number - Label of the number format
+    * progress - Label of the progress bar format
+    * isprogress - Whether the column is shown as a progress bar
+    * apply - Label of the apply button
+    * save - false, or the label of the save button
+    * remove - false, or the label of the remove button
+
+    Example context (json):
+    {
+        "title": "Edit calculated column",
+        "namelabel": "Name",
+        "name": "Ratio",
+        "formulalabel": "Formula",
+        "formula": "[a] / [b] * 100",
+        "chips": {"label": "Columns", "columns": [{"key": "a", "label": "A"}]},
+        "help": "Use + - * / and brackets.",
+        "formatlabel": "Format",
+        "number": "Number",
+        "progress": "Progress bar",
+        "isprogress": false,
+        "apply": "Apply",
+        "save": false,
+        "remove": "Remove"
+    }
+}}
+<div class="reportium-col-filter reportium-kpi-popover reportium-calc-popover" data-region="calc-popover" role="dialog"
+    aria-label="{{title}}">
+    <div class="reportium-col-filter-title"><i class="fa fa-calculator" aria-hidden="true"></i> {{title}}</div>
+    <div class="reportium-col-filter-body">
+        <label>{{namelabel}}<input type="text" class="form-control form-control-sm" maxlength="100"
+            data-calc-field="label" value="{{name}}"></label>
+        <label>{{formulalabel}}<textarea class="form-control form-control-sm reportium-calc-formula" rows="2"
+            spellcheck="false" data-calc-field="formula" placeholder="[a] / [b] * 100">{{formula}}</textarea></label>
+        {{#chips}}
+        <div class="small text-muted">{{label}}</div>
+        <div class="reportium-calc-chips">
+            {{#columns}}
+            <button type="button" class="reportium-calc-chip" data-action="calc-chip" data-key="{{key}}"
+                title="[{{key}}]">{{label}}</button>
+            {{/columns}}
+        </div>
+        {{/chips}}
+        <div class="small text-muted">{{help}}</div>
+        <label>{{formatlabel}}<select class="form-control form-control-sm" data-calc-field="format">
+            <option value="text"{{^isprogress}} selected{{/isprogress}}>{{number}}</option>
+            <option value="progress"{{#isprogress}} selected{{/isprogress}}>{{progress}}</option>
+        </select></label>
+        <div class="small" data-region="calc-preview" aria-live="polite"></div>
+        <div class="reportium-kpi-popover-actions">
+            <button type="button" class="btn btn-sm btn-primary" data-action="calc-apply">{{apply}}</button>
+            {{#save}}<button type="button" class="btn btn-sm btn-outline-primary" data-action="calc-save">{{save}}</button>{{/save}}
+            {{#remove}}
+            <button type="button" class="btn btn-sm btn-link text-danger" data-action="calc-remove">{{remove}}</button>
+            {{/remove}}
+        </div>
+    </div>
+</div>

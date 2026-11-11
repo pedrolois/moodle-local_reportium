@@ -133,6 +133,19 @@ final class scheduler_test extends \advanced_testcase {
         $this->assertSame(get_string('scheduleownerlost', 'local_reportium'), $log->error);
     }
 
+    public function test_a_creator_who_lost_the_download_capability_sends_nothing(): void {
+        $manager = $this->getDataGenerator()->create_user();
+        $managerrole = (int) \core\di::get(\moodle_database::class)->get_field('role', 'id', ['shortname' => 'manager']);
+        $this->getDataGenerator()->role_assign($managerrole, $manager->id);
+        $schedule = $this->schedule(['emails' => ['outside@example.org']], ['userid' => $manager->id]);
+        $this->assertSame('sent', scheduler::send($schedule)->status);
+
+        assign_capability('local/reportium:download', CAP_PROHIBIT, $managerrole, \context_system::instance()->id, true);
+        $log = scheduler::send($schedule);
+        $this->assertSame('error', $log->status);
+        $this->assertSame(get_string('scheduleownerlost', 'local_reportium'), $log->error);
+    }
+
     public function test_the_task_sends_what_is_due_and_moves_the_next_run(): void {
         global $DB;
         $due = $this->schedule(['emails' => ['outside@example.org']]);

@@ -26,9 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026110601;
+$plugin->version = 2026111100;
 $plugin->requires = 2024100700; // Moodle 4.5+ (AI subsystem).
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.0.4';
+$plugin->release = '1.0.5';
 $plugin->supported = [405, 405];
 $plugin->component = 'local_reportium';
