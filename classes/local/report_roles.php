@@ -262,9 +262,10 @@ class report_roles {
      * Whether the user may download and print the data of the reports of a context (local/reportium:download).
      *
      * @param context $context
+     * @param int|null $userid the user to check, the current user by default
      * @return bool
      */
-    public static function can_download(context $context): bool {
-        return has_capability('local/reportium:download', $context);
+    public static function can_download(context $context, ?int $userid = null): bool {
+        return has_capability('local/reportium:download', $context, $userid);
     }
 }

@@ -1,0 +1,161 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/settings_drawer
+
+    Chart settings of a report level, in a drawer on the right edge: chart (X axis, metrics, stacking), table (page
+    size, column order, column formats), KPI cards and totals row, chart types offered. Rendered from JavaScript
+    (local_reportium/levels); its events are handled on the report root.
+
+    Context variables required for this template:
+    * id - Id of the drawer
+    * open - Whether the drawer is open
+    * title - Title of the drawer
+    * close - Label of the close button
+    * chart - Chart on screen (bar, line, pie, table)
+    * toggleall - Label of "Expand all" or "Collapse all"
+    * sections - [{id, icon, title, open, chart, table, kpis, views}], each with one of chart, table, kpis or views:
+      * chart - {xaxis, labeloptions: [{value, label, selected}], metricslabel, inputtype, name,
+        metrics: [{value, label, checked, auto}], stack (false or {hidden, checked, label})}
+      * table - {pagesizelabel, pagesize, resetorder (false or label), formats (false or {legend, help,
+        items: [{key, label, options: [{value, label, selected}]}]})}
+      * kpis - {legend, cards, cardschecked, rows, rowschecked, help, columns: [{key, label,
+        options: [{value, label, selected}]}], totals, totalschecked}
+      * views - {legend, help, items: [{value, label, checked}]}
+    * apply - Label of the apply button
+    * save - false, or {save, reset}
+
+    Example context (json):
+    {
+        "id": "reportium-1-settings",
+        "open": true,
+        "title": "Chart settings",
+        "close": "Close",
+        "chart": "table",
+        "toggleall": "Expand all",
+        "sections": [{"id": "table", "icon": "fa-table", "title": "Table", "open": false, "table": {
+            "pagesizelabel": "Rows per page", "pagesize": 25, "resetorder": false, "formats": false}
+        }],
+        "apply": "Apply",
+        "save": {"save": "Save", "reset": "Reset"}
+    }
+}}
+<aside class="reportium-sql-drawer reportium-side-drawer{{#open}} is-open{{/open}}" id="{{id}}" data-region="settings-drawer"
+    aria-label="{{title}}">
+    <div class="reportium-sql-drawer-header">
+        <button type="button" class="btn reportium-sql-close" data-action="toggle-panel" data-panel="settings"
+            aria-label="{{close}}"><i class="fa fa-xmark fa-times fa-fw" aria-hidden="true"></i></button>
+        <span class="reportium-sql-drawer-title"><i class="fa fa-cog" aria-hidden="true"></i> {{title}}</span>
+    </div>
+    <div class="reportium-sql-drawer-body">
+        <div class="reportium-settings" data-region="settings-panel" data-chart="{{chart}}">
+            <div class="reportium-settings-toolbar">
+                <button type="button" class="btn btn-link btn-sm p-0" data-action="settings-toggle-all">{{toggleall}}</button>
+            </div>
+            {{#sections}}
+            <details class="reportium-settings-section" data-section="{{id}}"{{#open}} open{{/open}}>
+                <summary><i class="fa {{icon}} fa-fw" aria-hidden="true"></i> {{title}}</summary>
+                <div class="reportium-settings-section-body">
+                    {{#chart}}
+                    <label>{{xaxis}}
+                        <select class="form-control form-control-sm" data-setting="labelcolumn">
+                            {{#labeloptions}}
+                            <option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>
+                            {{/labeloptions}}
+                        </select></label>
+                    <fieldset><legend>{{metricslabel}}</legend>
+                        {{#metrics}}
+                        <label class="reportium-check">
+                            <input type="{{inputtype}}" name="{{name}}" data-setting="metric"
+                                value="{{value}}"{{#checked}} checked{{/checked}}>
+                            {{label}}{{#auto}} <small>({{auto}})</small>{{/auto}}</label>
+                        {{/metrics}}
+                    </fieldset>
+                    {{#stack}}
+                    <label class="reportium-check" data-region="stacked-field"{{#hidden}} hidden{{/hidden}}>
+                        <input type="checkbox" data-setting="stacked"{{#checked}} checked{{/checked}}> {{label}}</label>
+                    {{/stack}}
+                    {{/chart}}
+                    {{#table}}
+                    <label class="reportium-settings-row"><span>{{pagesizelabel}}</span>
+                        <input type="number" min="1" class="form-control form-control-sm" data-setting="pagesize"
+                            value="{{pagesize}}"></label>
+                    {{#resetorder}}
+                    <button type="button" class="btn btn-link btn-sm p-0" data-action="reset-column-order">{{resetorder}}</button>
+                    {{/resetorder}}
+                    {{#formats}}
+                    <fieldset class="reportium-formats" data-region="formats-field">
+                        <legend>{{legend}}</legend>
+                        <div class="small text-muted mb-1">{{help}}</div>
+                        {{#items}}
+                        <label class="reportium-settings-row"><span>{{label}}</span>
+                            <select class="form-control form-control-sm" data-setting="format" data-key="{{key}}">
+                                {{#options}}
+                                <option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>
+                                {{/options}}
+                            </select></label>
+                        {{/items}}
+                    </fieldset>
+                    {{/formats}}
+                    {{/table}}
+                    {{#kpis}}
+                    <fieldset class="reportium-kpi-settings" data-region="kpi-settings">
+                        <legend class="sr-only visually-hidden">{{legend}}</legend>
+                        <label class="reportium-check">
+                            <input type="checkbox" data-setting="kpis"{{#cardschecked}} checked{{/cardschecked}}> {{cards}}</label>
+                        <label class="reportium-check">
+                            <input type="checkbox" data-setting="kpirows"{{#rowschecked}} checked{{/rowschecked}}> {{rows}}</label>
+                        <div class="small text-muted mb-1">{{help}}</div>
+                        <div class="reportium-settings-grid">
+                            {{#columns}}
+                            <label class="reportium-settings-row"><span>{{label}}</span>
+                                <select class="form-control form-control-sm" data-setting="kpi" data-key="{{key}}">
+                                    {{#options}}
+                                    <option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>
+                                    {{/options}}
+                                </select></label>
+                            {{/columns}}
+                        </div>
+                        <label class="reportium-check">
+                            <input type="checkbox" data-setting="totalsrow"{{#totalschecked}} checked{{/totalschecked}}>
+                            {{totals}}</label>
+                    </fieldset>
+                    {{/kpis}}
+                    {{#views}}
+                    <fieldset data-region="viewtypes-field">
+                        <legend class="sr-only visually-hidden">{{legend}}</legend>
+                        <div class="small text-muted mb-1">{{help}}</div>
+                        {{#items}}
+                        <label class="reportium-check">
+                            <input type="checkbox" data-setting="viewtype" value="{{value}}"{{#checked}} checked{{/checked}}>
+                            {{label}}</label>
+                        {{/items}}
+                    </fieldset>
+                    {{/views}}
+                </div>
+            </details>
+            {{/sections}}
+            <div class="reportium-settings-actions">
+                <button type="button" class="btn btn-sm btn-primary" data-action="apply-settings">{{apply}}</button>
+                {{#save}}
+                <button type="button" class="btn btn-sm btn-outline-primary" data-action="save-settings">{{save}}</button>
+                <button type="button" class="btn btn-sm btn-link" data-action="reset-settings">{{reset}}</button>
+                {{/save}}
+            </div>
+        </div>
+    </div>
+</aside>

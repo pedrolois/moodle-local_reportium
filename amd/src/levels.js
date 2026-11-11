@@ -662,12 +662,14 @@ class ReportApp {
         this.root.querySelector('[data-region="body"]').innerHTML = `<div class="alert alert-info" data-region="no-sql">
             ${esc(this.canmanagesql ? this.str.ui_nosql_add : this.str.ui_nosql)}</div>`;
         this.hasFilters = false;
-        this.renderSql();
         this.renderSideTabs();
-        const text = this.root.querySelector('[data-region="sql-text"]');
-        if (text) {
-            text.focus();
-        }
+        this.renderSql().then(() => {
+            const text = this.root.querySelector('[data-region="sql-text"]');
+            if (text) {
+                text.focus();
+            }
+            return null;
+        }).catch(Notification.exception);
     }
 
     /**
@@ -1097,76 +1099,67 @@ class ReportApp {
     /**
      * SQL Inspector: a drawer on the right edge with one pill per level, "+ Add level",
      * and the editor of the selected level. Only for SQL managers.
+     *
+     * @returns {Promise} resolved once the drawer is on the page
      */
     renderSql() {
         const region = this.root.querySelector('[data-region="sql"]');
         if (!this.canmanagesql) {
             region.innerHTML = '';
-            return;
+            return Promise.resolve();
         }
         const deepest = this.levels.reduce((max, l) => Math.max(max, l.level), 0);
         const selected = this.sqlSelected === null ? this.level : this.sqlSelected;
         // No level saved yet (new report): level 1 is a new, unsaved editor.
         const isnew = !this.levels.length || selected > deepest;
         const current = this.levels.find((l) => l.level === selected) || {sqlquery: '', label: ''};
-        const levelname = (level) => esc(this.str.ui_sqltitle.replace('{$a}', level + 1));
-        const pill = (level, extra) => `<button type="button" class="reportium-sql-pill${extra}" data-action="sql-select"
-            data-level="${level}">${levelname(level)}</button>`;
-        const pills = this.levels.map((l) => pill(l.level, l.level === selected ? ' is-active' : ''))
-            .concat(isnew ? [pill(selected, ' is-active is-new')] : [])
-            .join('');
         const lastsaved = this.levels.find((l) => l.level === deepest);
-        const canadd = !isnew && lastsaved && lastsaved.sqlquery.trim() !== '';
-        const badge = isnew ? this.str.ui_sqlunsaved : this.str.ui_sqlsavedbadge;
         const title = this.str.ui_sqltitle.replace('{$a}', selected + 1);
-        const badgeclass = 'reportium-sql-badge' + (isnew ? ' is-unsaved' : '');
-        const savebutton = `<button type="button" class="btn btn-sm btn-primary" data-action="save-sql">
-            ${esc(this.str.ui_sqlsave)}</button>`;
-        const deletebutton = selected === deepest && selected > 0 && !isnew
-            ? `<button type="button" class="btn btn-sm btn-outline-danger" data-action="delete-sql">
-                ${esc(this.str.ui_sqldelete)}</button>` : '';
-        const closeicon = '<i class="fa fa-xmark fa-times fa-fw" aria-hidden="true"></i>';
+        const pills = this.levels.map((l) => ({level: l.level, active: l.level === selected, isnew: false}))
+            .concat(isnew ? [{level: selected, active: true, isnew: true}] : [])
+            .map((p) => Object.assign(p, {name: this.str.ui_sqltitle.replace('{$a}', p.level + 1)}));
+        const context = {
+            id: `${this.root.id}-sqldrawer`,
+            open: !!this.sqlOpen,
+            inspector: this.str.ui_sqlinspector,
+            close: this.str.ui_close,
+            pills: pills,
+            add: !isnew && lastsaved && lastsaved.sqlquery.trim() !== '' ? this.str.ui_sqladdshort : false,
+            level: selected,
+            title: title,
+            badge: isnew ? this.str.ui_sqlunsaved : this.str.ui_sqlsavedbadge,
+            unsaved: isnew,
+            prevhint: selected > 0 ? {help: this.str.ui_sqlhelp, text: this.str.ui_sqlprevhint} : false,
+            mycourses: {shown: current.sqlquery.includes('%%MYCOURSES%%'), text: this.str.ui_sqlnote_mycourses},
+            slow: this.slowContext(selected),
+            sqlquery: current.sqlquery,
+            label: current.label,
+            save: this.str.ui_sqlsave,
+            delete: selected === deepest && selected > 0 && !isnew ? this.str.ui_sqldelete : false,
+            historylabel: this.str.ui_history,
+            historyopen: this.historyLevel === selected,
+            history: this.historyContext(selected, isnew),
+        };
         // Vertical tab on the right edge, drawer on the right.
-        region.innerHTML = `
-            <aside class="reportium-sql-drawer${this.sqlOpen ? ' is-open' : ''}" id="${this.root.id}-sqldrawer"
-                data-region="sql-drawer" aria-label="${esc(this.str.ui_sqlinspector)}">
-                <div class="reportium-sql-drawer-header">
-                    <button type="button" class="btn reportium-sql-close" data-action="toggle-sql"
-                        aria-label="${esc(this.str.ui_close)}">${closeicon}</button>
-                    <span class="reportium-sql-drawer-title"><i class="fa fa-code" aria-hidden="true"></i>
-                        ${esc(this.str.ui_sqlinspector)}</span>
-                </div>
-                <div class="reportium-sql-drawer-body">
-                    <div class="reportium-sql-pills">${pills}
-                        ${canadd ? `<button type="button" class="reportium-sql-pill reportium-sql-pill-add" data-action="sql-add">
-                            + ${esc(this.str.ui_sqladdshort)}</button>` : ''}</div>
-                    <div class="reportium-sql-editor" data-sql-level="${selected}">
-                        <div class="reportium-sql-heading">${esc(title)}
-                            <span class="${badgeclass}" data-region="sql-badge">${esc(badge)}</span>
-                        </div>
-                        ${selected > 0 ? `<div class="reportium-sql-hint" title="${esc(this.str.ui_sqlhelp)}">
-                            <code>%%PREVIOUSVALUE%%</code> ${esc(this.str.ui_sqlprevhint)}</div>` : ''}
-                        <div class="reportium-sql-hint" data-region="sql-note-mycourses"
-                            ${current.sqlquery.includes('%%MYCOURSES%%') ? '' : 'hidden'}>
-                            <code>%%MYCOURSES%%</code> ${esc(this.str.ui_sqlnote_mycourses)}</div>
-                        ${this.slowHtml(selected)}
-                        <textarea class="reportium-sql-text" spellcheck="false" aria-label="${esc(title)}"
-                            data-region="sql-text">${esc(current.sqlquery)}</textarea>
-                        <input type="hidden" data-region="sql-label" value="${esc(current.label)}">
-                        <div class="reportium-sql-actions">
-                            ${savebutton}
-                            ${deletebutton}
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-action="sql-history"
-                                aria-expanded="${this.historyLevel === selected}">
-                                <i class="fa fa-clock-rotate-left fa-history" aria-hidden="true"></i>
-                                ${esc(this.str.ui_history)}</button>
-                            <span class="reportium-sql-status" data-region="sql-status" role="status"></span>
-                        </div>
-                        <div class="reportium-sql-history" data-region="sql-history"
-                            ${this.historyLevel === selected ? '' : 'hidden'}>${this.historyHtml(selected, isnew)}</div>
-                    </div>
-                </div>
-            </aside>`;
+        const request = (this.sqlRequest = (this.sqlRequest || 0) + 1);
+        // Kept so that a message written after a reload (e.g. "Saved") waits for the drawer it belongs to.
+        this.sqlRendered = Templates.renderForPromise('local_reportium/sql_drawer', context).then(({html, js}) => {
+            if (request !== this.sqlRequest) {
+                return null;
+            }
+            Templates.replaceNodeContents(region, html, js);
+            this.attachSqlHelper(region);
+            return null;
+        }).catch(Notification.exception);
+        return this.sqlRendered;
+    }
+
+    /**
+     * Below the SQL editor: the AI assistant offered by another plugin, or the instructions to paste into an AI chat.
+     *
+     * @param {HTMLElement} region
+     */
+    attachSqlHelper(region) {
         if (this.config.assistant) {
             // An assistant offered by another plugin (Reportium Pro), loaded once and kept across re-renders.
             const body = region.querySelector('.reportium-sql-drawer-body');
@@ -1219,19 +1212,19 @@ class ReportApp {
      * (the server only sends tips to those who can change the SQL, when the level was slow).
      *
      * @param {Number} level
-     * @returns {String}
+     * @returns {Object|Boolean} context of the warning in local_reportium/sql_drawer, false when not shown
      */
-    slowHtml(level) {
+    slowContext(level) {
         const payload = this.payload || {};
         if (level !== this.level || !payload.slowtips || !payload.slowtips.length) {
-            return '';
+            return false;
         }
         const seconds = ((payload.executionms || 0) / 1000).toFixed(1);
-        const tips = payload.slowtips.map((tip) => `<li>${esc(tip)}</li>`).join('');
-        return `<div class="alert alert-warning reportium-slow" data-region="sql-slow" role="status">
-            <strong><i class="fa fa-gauge-high fa-tachometer" aria-hidden="true"></i>
-            ${esc(this.str.ui_slowquery.replace('{$a}', seconds))}</strong>
-            <div class="mt-1">${esc(this.str.ui_slowtips)}</div><ul class="mb-0">${tips}</ul></div>`;
+        return {
+            title: this.str.ui_slowquery.replace('{$a}', seconds),
+            intro: this.str.ui_slowtips,
+            tips: payload.slowtips.map(String),
+        };
     }
 
     /**
@@ -1240,39 +1233,29 @@ class ReportApp {
      *
      * @param {Number} level
      * @param {Boolean} isnew the level has no saved SQL (e.g. it was deleted: its versions can be restored)
-     * @returns {String}
+     * @returns {Object|Boolean} context of the history in local_reportium/sql_drawer, false when not shown
      */
-    historyHtml(level, isnew) {
+    historyContext(level, isnew) {
         if (this.historyLevel !== level || !this.history) {
-            return '';
+            return false;
         }
         if (!this.history.length) {
-            return `<div class="text-muted small" data-region="history-empty">${esc(this.str.ui_historyempty)}</div>`;
+            return {empty: this.str.ui_historyempty, hint: false, items: []};
         }
-        const when = (ts) => formatDate(String(ts), true);
-        const items = this.history.map((v, i) => {
-            const restorable = !isnew || v.action === 'deleted' || i === 0;
-            return `<li class="reportium-history-item" data-region="history-item" data-id="${v.id}">
-                <div class="reportium-history-meta">
-                    <span class="badge reportium-history-${esc(v.action)}">
-                        ${esc(this.str['ui_historyaction_' + v.action] || v.action)}</span>
-                    <span>${esc(when(v.timecreated))}</span>
-                    <span class="text-muted">${esc(v.userfullname)}</span>
-                </div>
-                <div class="reportium-history-buttons">
-                    <button type="button" class="btn btn-link btn-sm p-0" data-action="history-diff" data-id="${v.id}">
-                        ${esc(this.str.ui_historychanges)}</button>
-                    ${isnew ? '' : `<button type="button" class="btn btn-link btn-sm p-0" data-action="history-use"
-                        data-id="${v.id}">
-                        ${esc(this.str.ui_historyuse)}</button>`}
-                    ${restorable ? `<button type="button" class="btn btn-outline-primary btn-sm" data-action="history-restore"
-                        data-id="${v.id}">${esc(this.str.ui_historyrestore)}</button>` : ''}
-                </div>
-                <pre class="reportium-history-diff" data-region="history-diff-${v.id}" hidden></pre>
-            </li>`;
-        }).join('');
-        const hint = isnew ? `<div class="text-muted small mb-1">${esc(this.str.ui_historydeletedhint)}</div>` : '';
-        return `${hint}<ol class="reportium-history list-unstyled mb-0">${items}</ol>`;
+        return {
+            empty: false,
+            hint: isnew ? this.str.ui_historydeletedhint : false,
+            items: this.history.map((v, i) => ({
+                id: v.id,
+                action: v.action,
+                actionlabel: this.str['ui_historyaction_' + v.action] || v.action,
+                when: formatDate(String(v.timecreated), true),
+                user: v.userfullname,
+                changes: this.str.ui_historychanges,
+                use: isnew ? false : this.str.ui_historyuse,
+                restore: !isnew || v.action === 'deleted' || i === 0 ? this.str.ui_historyrestore : false,
+            })),
+        };
     }
 
     /**
@@ -1321,7 +1304,8 @@ class ReportApp {
             this.sqlSelected = result.level;
             return this.loadLevels().then(() => this.load()).then(() => {
                 this.sqlSelected = result.level;
-                this.renderSql();
+                return this.renderSql();
+            }).then(() => {
                 const node = this.root.querySelector('[data-region="sql-status"]');
                 if (node) {
                     node.className = 'reportium-sql-status text-success';
@@ -1393,7 +1377,7 @@ class ReportApp {
                 return null;
             }
             this.payloads = {};
-            return this.loadLevels().then(() => this.load()).then(() => {
+            return this.loadLevels().then(() => this.load()).then(() => this.sqlRendered).then(() => {
                 const node = this.root.querySelector('[data-region="sql-status"]');
                 if (node) {
                     node.className = 'reportium-sql-status text-success';
@@ -1609,6 +1593,8 @@ class ReportApp {
 
     /**
      * Chart settings panel: automatic mapping made visible and editable.
+     *
+     * @returns {Promise} resolved once the drawer is on the page
      */
     renderSettings() {
         const region = this.root.querySelector('[data-region="settings"]');
@@ -1619,14 +1605,12 @@ class ReportApp {
         // "Fullname (Id)" or "Fullname (Email)", to tell apart items with the same name.
         const labelcols = cols.filter((c) => c.type !== 'number');
         const textcols = labelcols.filter((c) => c.type === 'text' || c.type === 'date');
-        const labelchoices = labelcols.map((c) => ({value: c.key, text: c.label}));
+        const labelchoices = labelcols.map((c) => ({value: c.key, label: c.label}));
         textcols.forEach((c) => {
             labelcols.filter((o) => o.key !== c.key).forEach((o) => {
-                labelchoices.push({value: `${c.key}|${o.key}`, text: `${c.label} (${o.label})`});
+                labelchoices.push({value: `${c.key}|${o.key}`, label: `${c.label} (${o.label})`});
             });
         });
-        const labelopts = labelchoices.map((o) => `<option value="${esc(o.value)}"${o.value === map.labelcolumn ? ' selected' : ''}>
-            ${esc(o.text)}</option>`).join('');
         // The panel follows the chart on screen (the toolbar switcher is the chart type): a table has no
         // X axis or metrics, a pie shows a single metric, and only bars can stack.
         const current = this.view();
@@ -1636,75 +1620,94 @@ class ReportApp {
         if (current === 'pie') {
             chosenmetrics = chosenmetrics.slice(0, 1);
         }
-        const inputtype = current === 'pie' ? 'radio' : 'checkbox';
-        const automarker = ` <small>(${esc(this.str.ui_auto)})</small>`;
-        const metrics = cols.filter((c) => c.type === 'number').map((c) => `<label class="reportium-check">
-            <input type="${inputtype}" name="reportium-metric-${this.config.reportid}" data-setting="metric"
-                value="${esc(c.key)}"${chosenmetrics.includes(c.key) ? ' checked' : ''}>
-            ${esc(c.label)}${(auto.metrics || []).includes(c.key) ? automarker : ''}</label>`).join('');
-        const select = (setting, label, options) => `<label>${esc(label)}
-            <select class="form-control form-control-sm" data-setting="${setting}">${options}</select></label>`;
-        const axes = ischart ? `${select('labelcolumn', current === 'pie' ? this.str.ui_slicelabel : this.str.ui_xaxis, labelopts)}
-            <fieldset><legend>${esc(this.str.ui_metrics)}</legend>${metrics}</fieldset>` : '';
-        const stack = current === 'bar' ? `<label class="reportium-check" data-region="stacked-field"${
-            this.canStack(current, chosenmetrics) ? '' : ' hidden'}>
-                <input type="checkbox" data-setting="stacked"${map.stacked ? ' checked' : ''}>
-                ${esc(this.str.ui_stacked)}</label>` : '';
         // Column format (how the table shows each column): automatic from the keywords of instructions.json, or chosen.
         const formatname = (f) => this.str['ui_format_' + f] || f;
         const chosenformats = (this.state.mapping || {}).formats || (this.payload.mapping || {}).formats || {};
         const formats = cols.filter((c) => c.type !== 'id' && ((c.format && c.format !== 'text') || chosenformats[c.key]))
-            .map((c) => {
-            const autoname = this.str.ui_format_auto.replace('{$a}', formatname(c.format || 'text'));
-            const auto = `<option value="">${esc(autoname)}</option>`;
-            const options = (this.config.formats || ['text']).map((f) => `<option value="${esc(f)}"${
-                chosenformats[c.key] === f ? ' selected' : ''}>${esc(formatname(f))}</option>`).join('');
-            return `<label class="reportium-settings-row"><span>${esc(c.label)}</span>
-                <select class="form-control form-control-sm" data-setting="format"
-                data-key="${esc(c.key)}">${auto}${options}</select></label>`;
-        }).join('');
+            .map((c) => ({
+                key: c.key,
+                label: c.label,
+                options: [{
+                    value: '',
+                    label: this.str.ui_format_auto.replace('{$a}', formatname(c.format || 'text')),
+                    selected: !chosenformats[c.key],
+                }].concat((this.config.formats || ['text']).map((f) => ({
+                    value: f,
+                    label: formatname(f),
+                    selected: chosenformats[c.key] === f,
+                }))),
+            }));
         // Every section folded at first; the user's choice is remembered while the page is open.
         this.foldedSections = this.foldedSections || new Set(['chart', 'table', 'kpis', 'views']);
-        const section = (id, icon, title, body) => (body ? `<details class="reportium-settings-section"
-            data-section="${id}"${this.foldedSections.has(id) ? '' : ' open'}>
-            <summary><i class="fa ${icon} fa-fw" aria-hidden="true"></i> ${esc(title)}</summary>
-            <div class="reportium-settings-section-body">${body}</div></details>` : '');
+        // Each section carries only its own part (the others false, so Mustache does not look them up above).
+        const section = (id, icon, title, body) => Object.assign(
+            {id: id, icon: icon, title: title, open: !this.foldedSections.has(id), chart: false, table: false, kpis: false,
+                views: false},
+            {[id]: body}
+        );
+        const sections = [];
+        if (ischart) {
+            sections.push(section('chart', 'fa-chart-column fa-bar-chart', this.str.ui_settings_chart, {
+                xaxis: current === 'pie' ? this.str.ui_slicelabel : this.str.ui_xaxis,
+                labeloptions: labelchoices.map((o) => Object.assign(o, {selected: o.value === map.labelcolumn})),
+                metricslabel: this.str.ui_metrics,
+                inputtype: current === 'pie' ? 'radio' : 'checkbox',
+                name: `reportium-metric-${this.config.reportid}`,
+                metrics: cols.filter((c) => c.type === 'number').map((c) => ({
+                    value: c.key,
+                    label: c.label,
+                    checked: chosenmetrics.includes(c.key),
+                    auto: (auto.metrics || []).includes(c.key) ? this.str.ui_auto : false,
+                })),
+                stack: current === 'bar' ? {
+                    hidden: !this.canStack(current, chosenmetrics),
+                    checked: !!map.stacked,
+                    label: this.str.ui_stacked,
+                } : false,
+            }));
+        }
+        sections.push(section('table', 'fa-table', this.str.ui_settings_table, {
+            pagesizelabel: this.str.ui_pagesize,
+            pagesize: map.pagesize || DEFAULT_PAGE_SIZE,
+            resetorder: (this.columnOrder[String(this.level)] || []).length ? this.str.ui_resetcolumnorder : false,
+            formats: formats.length ? {
+                legend: this.str.ui_columnformats,
+                help: this.str.ui_settings_formats_help,
+                items: formats,
+            } : false,
+        }));
+        sections.push(section('kpis', 'fa-gauge-high fa-tachometer', this.str.ui_settings_kpis, this.kpiSettingsContext(map)));
+        if (this.offeredViews().length > 1) {
+            sections.push(section('views', 'fa-eye', this.str.ui_settings_views, {
+                legend: this.str.reportviews,
+                help: this.str.ui_settings_views_help,
+                items: this.offeredViews().map((v) => ({
+                    value: v,
+                    label: this.str['ui_' + v],
+                    checked: this.allowedViews().includes(v),
+                })),
+            }));
+        }
+        const allfolded = ['chart', 'table', 'kpis', 'views'].every((id) => this.foldedSections.has(id));
+        const context = {
+            id: `${this.root.id}-settings`,
+            open: this.openPanel === 'settings',
+            title: this.str.ui_chartsettings,
+            close: this.str.ui_close,
+            chart: current,
+            toggleall: allfolded ? this.str.ui_expandall : this.str.ui_collapseall,
+            sections: sections,
+            apply: this.str.ui_apply,
+            save: this.config.canconfigure ? {save: this.str.ui_save, reset: this.str.ui_reset} : false,
+        };
         // Drawer on the right edge, opened from its side tab (gear + chart).
-        region.innerHTML = this.drawerHtml('settings', 'fa-cog', this.str.ui_chartsettings, `
-            <div class="reportium-settings" data-region="settings-panel" data-chart="${current}">
-            <div class="reportium-settings-toolbar">
-                <button type="button" class="btn btn-link btn-sm p-0" data-action="settings-toggle-all">
-                    ${esc(['chart', 'table', 'kpis', 'views'].every((id) => this.foldedSections.has(id)) ? this.str.ui_expandall
-                        : this.str.ui_collapseall)}</button>
-            </div>
-            ${section('chart', 'fa-chart-column fa-bar-chart', this.str.ui_settings_chart, ischart ? `${axes}${stack}` : '')}
-            ${section('table', 'fa-table', this.str.ui_settings_table, `
-                <label class="reportium-settings-row"><span>${esc(this.str.ui_pagesize)}</span>
-                    <input type="number" min="1" class="form-control form-control-sm" data-setting="pagesize"
-                    value="${map.pagesize || DEFAULT_PAGE_SIZE}"></label>
-                ${(this.columnOrder[String(this.level)] || []).length ? `<button type="button" class="btn btn-link btn-sm p-0"
-                    data-action="reset-column-order">${esc(this.str.ui_resetcolumnorder)}</button>` : ''}
-                ${formats ? `<fieldset class="reportium-formats" data-region="formats-field">
-                    <legend>${esc(this.str.ui_columnformats)}</legend>
-                    <div class="small text-muted mb-1">${esc(this.str.ui_settings_formats_help)}</div>
-                    ${formats}</fieldset>` : ''}`)}
-            ${section('kpis', 'fa-gauge-high fa-tachometer', this.str.ui_settings_kpis, this.kpiSettingsHtml(map))}
-            ${section('views', 'fa-eye', this.str.ui_settings_views, this.offeredViews().length > 1
-                ? `<fieldset data-region="viewtypes-field">
-                <legend class="sr-only visually-hidden">${esc(this.str.reportviews)}</legend>
-                <div class="small text-muted mb-1">${esc(this.str.ui_settings_views_help)}</div>
-                ${this.offeredViews().map((v) => `<label class="reportium-check"><input type="checkbox"
-                    data-setting="viewtype" value="${v}"${this.allowedViews().includes(v) ? ' checked' : ''}>
-                    ${esc(this.str['ui_' + v])}</label>`).join('')}
-                </fieldset>` : '')}
-            <div class="reportium-settings-actions">
-                <button type="button" class="btn btn-sm btn-primary" data-action="apply-settings">${esc(this.str.ui_apply)}</button>
-                ${this.config.canconfigure ? `<button type="button" class="btn btn-sm btn-outline-primary"
-                    data-action="save-settings">
-                    ${esc(this.str.ui_save)}</button>
-                <button type="button" class="btn btn-sm btn-link" data-action="reset-settings">
-                    ${esc(this.str.ui_reset)}</button>` : ''}
-            </div></div>`);
+        const request = (this.settingsRequest = (this.settingsRequest || 0) + 1);
+        return Templates.renderForPromise('local_reportium/settings_drawer', context).then(({html, js}) => {
+            if (request === this.settingsRequest) {
+                Templates.replaceNodeContents(region, html, js);
+            }
+            return null;
+        }).catch(Notification.exception);
     }
 
     /**
@@ -1892,34 +1895,32 @@ class ReportApp {
      * Chart settings of the KPI cards: shown or not, the rows card, a calculation per column, and the totals row.
      *
      * @param {Object} map effective mapping
-     * @returns {String}
+     * @returns {Object} context of the KPI section in local_reportium/settings_drawer
      */
-    kpiSettingsHtml(map) {
+    kpiSettingsContext(map) {
         const specs = this.kpiSpecs();
         const chosen = Object.fromEntries(specs.map((k) => [k.key, k.agg]));
         const options = (column) => {
             const aggs = column.type === 'number' ? ['sum', 'avg', 'min', 'max', 'count', 'distinct']
                 : (column.type === 'date' ? ['min', 'max', 'count', 'distinct'] : ['count', 'distinct']);
-            return [`<option value="">${esc(this.str.ui_kpi_none)}</option>`].concat(aggs.map((a) => `<option value="${a}"${
-                chosen[column.key] === a ? ' selected' : ''}>${esc(this.aggregateName(a, column))}</option>`)).join('');
+            return [{value: '', label: this.str.ui_kpi_none, selected: !chosen[column.key]}].concat(aggs.map((a) => ({
+                value: a,
+                label: this.aggregateName(a, column),
+                selected: chosen[column.key] === a,
+            })));
         };
-        const columns = this.payload.columns.filter((c) => c.type !== 'id').map((c) => `<label class="reportium-settings-row">
-            <span>${esc(c.label)}</span>
-            <select class="form-control form-control-sm" data-setting="kpi" data-key="${esc(c.key)}">${options(c)}
-            </select></label>`)
-            .join('');
-        return `<fieldset class="reportium-kpi-settings" data-region="kpi-settings">
-            <legend class="sr-only visually-hidden">${esc(this.str.ui_kpis)}</legend>
-            <label class="reportium-check"><input type="checkbox" data-setting="kpis"${map.kpis === false ? '' : ' checked'}>
-                ${esc(this.str.ui_kpis)}</label>
-            <label class="reportium-check"><input type="checkbox" data-setting="kpirows"${chosen._rows ? ' checked' : ''}>
-                ${esc(this.str.ui_kpi_showrows)}</label>
-            <div class="small text-muted mb-1">${esc(this.str.ui_kpi_help)}</div>
-            <div class="reportium-settings-grid">${columns}</div>
-            <label class="reportium-check"><input type="checkbox" data-setting="totalsrow"
-                ${this.totalsRowShown() ? ' checked' : ''}>
-                ${esc(this.str.ui_totalsrow)}</label>
-        </fieldset>`;
+        return {
+            legend: this.str.ui_kpis,
+            cards: this.str.ui_kpis,
+            cardschecked: map.kpis !== false,
+            rows: this.str.ui_kpi_showrows,
+            rowschecked: !!chosen._rows,
+            help: this.str.ui_kpi_help,
+            columns: this.payload.columns.filter((c) => c.type !== 'id')
+                .map((c) => ({key: c.key, label: c.label, options: options(c)})),
+            totals: this.str.ui_totalsrow,
+            totalschecked: this.totalsRowShown(),
+        };
     }
 
     /**
@@ -2118,56 +2119,72 @@ class ReportApp {
             this.openKpi = null;
             return;
         }
-        const option = (value, text) => `<option value="${esc(value)}"${spec.key === value ? ' selected' : ''}>
-            ${esc(text)}</option>`;
-        const columnoptions = [option('_rows', this.str.ui_kpi_rows)].concat(columns.map((c) => option(c.key, c.label)))
-            .join('');
-        const popover = document.createElement('div');
-        popover.className = 'reportium-col-filter reportium-kpi-popover';
-        popover.setAttribute('data-region', 'kpi-popover');
-        popover.setAttribute('role', 'dialog');
-        popover.setAttribute('aria-label', isnew ? this.str.ui_kpi_add : this.str.ui_kpi_edit);
-        popover.innerHTML = `<div class="reportium-col-filter-title"><i class="fa fa-gear fa-cog" aria-hidden="true"></i>
-                ${esc(isnew ? this.str.ui_kpi_add : this.str.ui_kpi_edit)}</div>
-            <div class="reportium-col-filter-body">
-                <label>${esc(this.str.ui_kpi_column)}<select class="form-control form-control-sm" data-kpi-field="key">
-                    ${columnoptions}</select></label>
-                <label data-region="kpi-agg-field">${esc(this.str.ui_kpi_calculation)}
-                    <select class="form-control form-control-sm" data-kpi-field="agg">${this.kpiAggOptions(spec)}</select></label>
-                <div class="text-danger small" data-region="kpi-error" hidden>${esc(this.str.ui_kpi_duplicate)}</div>
-                <div class="reportium-kpi-popover-actions">
-                    <button type="button" class="btn btn-sm btn-primary" data-action="kpi-apply">${esc(this.str.ui_apply)}</button>
-                    ${this.config.canconfigure ? `<button type="button" class="btn btn-sm btn-outline-primary"
-                        data-action="kpi-save">${esc(this.str.ui_save)}</button>` : ''}
-                    ${isnew ? '' : `<button type="button" class="btn btn-sm btn-link text-danger" data-action="kpi-remove">
-                        ${esc(this.str.ui_kpi_remove)}</button>`}
-                </div>
-            </div>`;
-        this.root.appendChild(popover);
+        const context = {
+            title: isnew ? this.str.ui_kpi_add : this.str.ui_kpi_edit,
+            columnlabel: this.str.ui_kpi_column,
+            columns: [{key: '_rows', label: this.str.ui_kpi_rows}].concat(columns)
+                .map((c) => ({value: c.key, label: c.label, selected: spec.key === c.key})),
+            calculationlabel: this.str.ui_kpi_calculation,
+            aggs: this.kpiAggs(spec),
+            duplicate: this.str.ui_kpi_duplicate,
+            apply: this.str.ui_apply,
+            save: this.config.canconfigure ? this.str.ui_save : false,
+            remove: isnew ? false : this.str.ui_kpi_remove,
+        };
+        const open = this.openKpi;
+        const request = (this.kpiRequest = (this.kpiRequest || 0) + 1);
+        Templates.renderForPromise('local_reportium/kpi_popover', context).then(({html, js}) => {
+            if (request !== this.kpiRequest || this.openKpi !== open || !button.isConnected) {
+                return null;
+            }
+            Templates.appendNodeContents(this.root, html, js);
+            const popover = this.root.querySelector('[data-region="kpi-popover"]');
+            this.placePopover(popover, button);
+            popover.querySelector('[data-kpi-field="key"]').focus();
+            return null;
+        }).catch(Notification.exception);
+    }
+
+    /**
+     * Put a popover under the button that opened it, inside the report.
+     *
+     * @param {HTMLElement} popover
+     * @param {HTMLElement} button
+     */
+    placePopover(popover, button) {
         const rootbox = this.root.getBoundingClientRect();
         const box = button.getBoundingClientRect();
         const left = Math.min(box.left - rootbox.left, Math.max(0, rootbox.width - popover.offsetWidth));
         popover.style.left = `${Math.max(0, left)}px`;
         popover.style.top = `${box.bottom - rootbox.top + 4}px`;
-        popover.querySelector('[data-kpi-field="key"]').focus();
     }
 
     /**
      * Calculations offered for the column of a card.
      *
      * @param {Object} spec {key, agg}
-     * @returns {String} options
+     * @returns {Array} [{value, label, selected}]
      */
-    kpiAggOptions(spec) {
+    kpiAggs(spec) {
         const column = this.payload.columns.find((c) => c.key === spec.key);
         if (!column) {
-            return `<option value="count" selected>${esc(this.str.ui_kpi_count)}</option>`;
+            return [{value: 'count', label: this.str.ui_kpi_count, selected: true}];
         }
         const aggs = column.type === 'number' ? ['sum', 'avg', 'min', 'max', 'count', 'distinct']
             : (column.type === 'date' ? ['min', 'max', 'count', 'distinct'] : ['count', 'distinct']);
         const chosen = aggs.includes(spec.agg) ? spec.agg : this.defaultAggregate(column);
-        return aggs.map((a) => `<option value="${a}"${a === chosen ? ' selected' : ''}>
-            ${esc(this.aggregateName(a, column))}</option>`)
+        return aggs.map((a) => ({value: a, label: this.aggregateName(a, column), selected: a === chosen}));
+    }
+
+    /**
+     * The calculations of a card as the options of a select.
+     *
+     * @param {Object} spec {key, agg}
+     * @returns {String} options
+     */
+    kpiAggOptions(spec) {
+        return this.kpiAggs(spec)
+            .map((a) => `<option value="${esc(a.value)}"${a.selected ? ' selected' : ''}>${esc(a.label)}</option>`)
             .join('');
     }
 
@@ -2330,48 +2347,36 @@ class ReportApp {
             return;
         }
         const chips = this.payload.columns.filter((c) => c.type === 'number' && c.key !== def.key)
-            .map((c) => `<button type="button" class="reportium-calc-chip" data-action="calc-chip" data-key="${esc(c.key)}"
-                title="[${esc(c.key)}]">${esc(c.label)}</button>`).join('');
-        const popover = document.createElement('div');
-        popover.className = 'reportium-col-filter reportium-kpi-popover reportium-calc-popover';
-        popover.setAttribute('data-region', 'calc-popover');
-        popover.setAttribute('role', 'dialog');
-        const title = isnew ? this.str.ui_calc_add : this.str.ui_calc_edit;
-        popover.setAttribute('aria-label', title);
-        popover.innerHTML = `<div class="reportium-col-filter-title"><i class="fa fa-calculator" aria-hidden="true"></i>
-                ${esc(title)}</div>
-            <div class="reportium-col-filter-body">
-                <label>${esc(this.str.ui_calc_name)}<input type="text" class="form-control form-control-sm" maxlength="100"
-                    data-calc-field="label" value="${esc(def.label)}"></label>
-                <label>${esc(this.str.ui_calc_formula)}<textarea class="form-control form-control-sm reportium-calc-formula"
-                    rows="2" spellcheck="false" data-calc-field="formula"
-                    placeholder="[a] / [b] * 100">${esc(def.formula)}</textarea>
-                    </label>
-                ${chips ? `<div class="small text-muted">${esc(this.str.ui_calc_columns)}</div>
-                    <div class="reportium-calc-chips">${chips}</div>` : ''}
-                <div class="small text-muted">${esc(this.str.ui_calc_help)}</div>
-                <label>${esc(this.str.ui_calc_format)}<select class="form-control form-control-sm" data-calc-field="format">
-                    <option value="text"${def.format === 'progress' ? '' : ' selected'}>${esc(this.str.ui_calc_number)}</option>
-                    <option value="progress"${def.format === 'progress' ? ' selected' : ''}>
-                        ${esc(this.str.ui_format_progress)}</option>
-                    </select></label>
-                <div class="small" data-region="calc-preview" aria-live="polite"></div>
-                <div class="reportium-kpi-popover-actions">
-                    <button type="button" class="btn btn-sm btn-primary" data-action="calc-apply">${esc(this.str.ui_apply)}</button>
-                    ${this.config.canconfigure ? `<button type="button" class="btn btn-sm btn-outline-primary"
-                        data-action="calc-save">${esc(this.str.ui_save)}</button>` : ''}
-                    ${isnew ? '' : `<button type="button" class="btn btn-sm btn-link text-danger" data-action="calc-remove">
-                        ${esc(this.str.ui_calc_remove)}</button>`}
-                </div>
-            </div>`;
-        this.root.appendChild(popover);
-        const rootbox = this.root.getBoundingClientRect();
-        const box = button.getBoundingClientRect();
-        const left = Math.min(box.left - rootbox.left, Math.max(0, rootbox.width - popover.offsetWidth));
-        popover.style.left = `${Math.max(0, left)}px`;
-        popover.style.top = `${box.bottom - rootbox.top + 4}px`;
-        this.previewCalc();
-        popover.querySelector(isnew ? '[data-calc-field="label"]' : '[data-calc-field="formula"]').focus();
+            .map((c) => ({key: c.key, label: c.label}));
+        const context = {
+            title: isnew ? this.str.ui_calc_add : this.str.ui_calc_edit,
+            namelabel: this.str.ui_calc_name,
+            name: def.label,
+            formulalabel: this.str.ui_calc_formula,
+            formula: def.formula,
+            chips: chips.length ? {label: this.str.ui_calc_columns, columns: chips} : false,
+            help: this.str.ui_calc_help,
+            formatlabel: this.str.ui_calc_format,
+            number: this.str.ui_calc_number,
+            progress: this.str.ui_format_progress,
+            isprogress: def.format === 'progress',
+            apply: this.str.ui_apply,
+            save: this.config.canconfigure ? this.str.ui_save : false,
+            remove: isnew ? false : this.str.ui_calc_remove,
+        };
+        const open = this.openCalc;
+        const request = (this.calcRequest = (this.calcRequest || 0) + 1);
+        Templates.renderForPromise('local_reportium/calc_popover', context).then(({html, js}) => {
+            if (request !== this.calcRequest || this.openCalc !== open || !button.isConnected) {
+                return null;
+            }
+            Templates.appendNodeContents(this.root, html, js);
+            const popover = this.root.querySelector('[data-region="calc-popover"]');
+            this.placePopover(popover, button);
+            this.previewCalc();
+            popover.querySelector(isnew ? '[data-calc-field="label"]' : '[data-calc-field="formula"]').focus();
+            return null;
+        }).catch(Notification.exception);
     }
 
     /**

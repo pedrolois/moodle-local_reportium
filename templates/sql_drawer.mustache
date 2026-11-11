@@ -1,0 +1,152 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_reportium/sql_drawer
+
+    SQL Inspector of a report: a drawer on the right edge with one pill per level, "+ Add level", and the editor
+    of the selected level (slow query tips, history of versions). Rendered from JavaScript (local_reportium/levels);
+    its events are handled on the report root.
+
+    Context variables required for this template:
+    * id - Id of the drawer
+    * open - Whether the drawer is open
+    * inspector - Title of the drawer
+    * close - Label of the close button
+    * pills - [{level, name, active, isnew}]
+    * add - false, or the label of "+ Add level"
+    * level - Level shown in the editor (0 = level 1)
+    * title - Title of the editor
+    * badge - Saved / unsaved badge
+    * unsaved - Whether the SQL of the editor is not saved
+    * prevhint - false, or {help, text}
+    * mycourses - {shown, text}
+    * slow - false, or {title, intro, tips: [string]}
+    * sqlquery - SQL of the level
+    * label - Label of the level
+    * save - Label of the save button
+    * delete - false, or the label of the delete button
+    * historylabel - Label of the history button
+    * historyopen - Whether the history is shown
+    * history - false, or {empty (false or text), hint (false or text), items: [{id, action, actionlabel, when, user,
+      changes, use (false or label), restore (false or label)}]}
+
+    Example context (json):
+    {
+        "id": "reportium-1-sqldrawer",
+        "open": true,
+        "inspector": "SQL Inspector",
+        "close": "Close",
+        "pills": [{"level": 0, "name": "Level 1 SQL", "active": true, "isnew": false}],
+        "add": "Add level",
+        "level": 0,
+        "title": "Level 1 SQL",
+        "badge": "Saved",
+        "unsaved": false,
+        "prevhint": false,
+        "mycourses": {"shown": false, "text": "Only the courses of the viewer."},
+        "slow": false,
+        "sqlquery": "SELECT id, fullname FROM {course}",
+        "label": "",
+        "save": "Save",
+        "delete": false,
+        "historylabel": "History",
+        "historyopen": false,
+        "history": false
+    }
+}}
+<aside class="reportium-sql-drawer{{#open}} is-open{{/open}}" id="{{id}}" data-region="sql-drawer" aria-label="{{inspector}}">
+    <div class="reportium-sql-drawer-header">
+        <button type="button" class="btn reportium-sql-close" data-action="toggle-sql" aria-label="{{close}}">
+            <i class="fa fa-xmark fa-times fa-fw" aria-hidden="true"></i></button>
+        <span class="reportium-sql-drawer-title"><i class="fa fa-code" aria-hidden="true"></i> {{inspector}}</span>
+    </div>
+    <div class="reportium-sql-drawer-body">
+        <div class="reportium-sql-pills">
+            {{#pills}}
+            <button type="button" class="reportium-sql-pill{{#active}} is-active{{/active}}{{#isnew}} is-new{{/isnew}}"
+                data-action="sql-select" data-level="{{level}}">{{name}}</button>
+            {{/pills}}
+            {{#add}}
+            <button type="button" class="reportium-sql-pill reportium-sql-pill-add" data-action="sql-add">+ {{add}}</button>
+            {{/add}}
+        </div>
+        <div class="reportium-sql-editor" data-sql-level="{{level}}">
+            <div class="reportium-sql-heading">{{title}}
+                <span class="reportium-sql-badge{{#unsaved}} is-unsaved{{/unsaved}}" data-region="sql-badge">{{badge}}</span>
+            </div>
+            {{#prevhint}}
+            <div class="reportium-sql-hint" title="{{help}}"><code>%%PREVIOUSVALUE%%</code> {{text}}</div>
+            {{/prevhint}}
+            {{#mycourses}}
+            <div class="reportium-sql-hint" data-region="sql-note-mycourses"{{^shown}} hidden{{/shown}}>
+                <code>%%MYCOURSES%%</code> {{text}}</div>
+            {{/mycourses}}
+            {{#slow}}
+            <div class="alert alert-warning reportium-slow" data-region="sql-slow" role="status">
+                <strong><i class="fa fa-gauge-high fa-tachometer" aria-hidden="true"></i> {{title}}</strong>
+                <div class="mt-1">{{intro}}</div>
+                <ul class="mb-0">{{#tips}}<li>{{.}}</li>{{/tips}}</ul>
+            </div>
+            {{/slow}}
+            <textarea class="reportium-sql-text" spellcheck="false" aria-label="{{title}}"
+                data-region="sql-text">{{sqlquery}}</textarea>
+            <input type="hidden" data-region="sql-label" value="{{label}}">
+            <div class="reportium-sql-actions">
+                <button type="button" class="btn btn-sm btn-primary" data-action="save-sql">{{save}}</button>
+                {{#delete}}
+                <button type="button" class="btn btn-sm btn-outline-danger" data-action="delete-sql">{{delete}}</button>
+                {{/delete}}
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-action="sql-history"
+                    aria-expanded="{{#historyopen}}true{{/historyopen}}{{^historyopen}}false{{/historyopen}}">
+                    <i class="fa fa-clock-rotate-left fa-history" aria-hidden="true"></i> {{historylabel}}</button>
+                <span class="reportium-sql-status" data-region="sql-status" role="status"></span>
+            </div>
+            <div class="reportium-sql-history" data-region="sql-history"{{^historyopen}} hidden{{/historyopen}}>
+                {{#history}}
+                {{#empty}}<div class="text-muted small" data-region="history-empty">{{empty}}</div>{{/empty}}
+                {{#hint}}<div class="text-muted small mb-1">{{hint}}</div>{{/hint}}
+                {{^empty}}
+                <ol class="reportium-history list-unstyled mb-0">
+                    {{#items}}
+                    <li class="reportium-history-item" data-region="history-item" data-id="{{id}}">
+                        <div class="reportium-history-meta">
+                            <span class="badge reportium-history-{{action}}">{{actionlabel}}</span>
+                            <span>{{when}}</span>
+                            <span class="text-muted">{{user}}</span>
+                        </div>
+                        <div class="reportium-history-buttons">
+                            <button type="button" class="btn btn-link btn-sm p-0" data-action="history-diff"
+                                data-id="{{id}}">{{changes}}</button>
+                            {{#use}}
+                            <button type="button" class="btn btn-link btn-sm p-0" data-action="history-use"
+                                data-id="{{id}}">{{use}}</button>
+                            {{/use}}
+                            {{#restore}}
+                            <button type="button" class="btn btn-outline-primary btn-sm" data-action="history-restore"
+                                data-id="{{id}}">{{restore}}</button>
+                            {{/restore}}
+                        </div>
+                        <pre class="reportium-history-diff" data-region="history-diff-{{id}}" hidden></pre>
+                    </li>
+                    {{/items}}
+                </ol>
+                {{/empty}}
+                {{/history}}
+            </div>
+        </div>
+    </div>
+</aside>

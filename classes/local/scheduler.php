@@ -306,6 +306,7 @@ class scheduler {
             $context = report_roles::report_context($report);
             if (
                 !$owner || !report_roles::can_view($report, (int) $owner->id, $context)
+                    || !report_roles::can_download($context, (int) $owner->id)
                     || !has_capability('local/reportium:schedule', $context, $owner)
             ) {
                 throw new \moodle_exception('scheduleownerlost', 'local_reportium');
