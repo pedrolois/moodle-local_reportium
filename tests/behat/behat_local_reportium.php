@@ -141,12 +141,20 @@ class behat_local_reportium extends behat_base {
      * @param int $count
      */
     public function the_reportium_table_should_have_rows(int $count): void {
-        $rows = $this->getSession()->getPage()->findAll('css', "[data-region='table'] tbody tr");
-        if (count($rows) !== $count) {
-            throw new ExpectationException(
-                'The report table has ' . count($rows) . " rows, {$count} expected",
-                $this->getSession()
-            );
-        }
+        // The table is redrawn after the search box waits for typing to stop: retry until it matches.
+        $this->spin(
+            function ($context, $count) {
+                $rows = $context->getSession()->getPage()->findAll('css', "[data-region='table'] tbody tr");
+                if (count($rows) !== $count) {
+                    throw new ExpectationException(
+                        'The report table has ' . count($rows) . " rows, {$count} expected",
+                        $context->getSession()
+                    );
+                }
+                return true;
+            },
+            $count,
+            behat_base::get_extended_timeout()
+        );
     }
 }

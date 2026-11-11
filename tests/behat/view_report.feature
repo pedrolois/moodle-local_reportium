@@ -38,9 +38,9 @@ Feature: Explore an interactive report
     Given I am on the "Fruit stock" "local_reportium > View" page
     And I wait until the Reportium report is ready
     When I set the field with xpath "//input[@data-region='search']" to "Pea"
-    Then I should see "Pears" in the "[data-region='table']" "css_element"
+    Then the Reportium table should have "1" row
+    And I should see "Pears" in the "[data-region='table']" "css_element"
     And I should not see "Apples" in the "[data-region='table']" "css_element"
-    And the Reportium table should have "1" row
 
   Scenario: A row opens the next level and the breadcrumbs go back
     Given I am on the "Fruit stock" "local_reportium > View" page
