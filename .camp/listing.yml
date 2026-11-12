@@ -1,0 +1,23 @@
+# camp listing manifest (https://github.com/camp-registry/camp-docs/blob/main/AUTHORS.md).
+# Ingested and hash-pinned by camp at each tagged release.
+
+name: Reportium
+summary: Interactive SQL reports with drill-down charts, tables, KPI cards, scheduled emails and alerts.
+description: |
+  Interactive SQL reports that run on your own Moodle site: tables, charts and
+  KPI cards that drill down from level to level, with ready-made reports
+  installed with the plugin.
+
+  - Drill-down levels (category > course > learner > activity), each an SQL query
+  - Bar, line, pie and table views, KPI cards, totals and calculated columns
+  - Date periods with comparison to the previous period
+  - Downloads in every Moodle data format, PDF and PNG
+  - Scheduled emails and condition-based alerts
+  - Per-report access by role, SQL Inspector with change history
+  - Optional instructions file to write report SQL with any AI chat; no
+    external AI account is required
+labels:
+  - fully-free
+links:
+  docs: https://github.com/pedrolois/moodle-local_reportium#readme
+  issues: https://github.com/pedrolois/moodle-local_reportium/issues

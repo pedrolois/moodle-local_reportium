@@ -1,0 +1,4 @@
+# Keep development files out of distribution ZIPs (git archive / camp releases).
+/.github export-ignore
+/.camp export-ignore
+/.gitattributes export-ignore
