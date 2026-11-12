@@ -1,0 +1,13 @@
+# Publishes each v* tag to the camp registry.
+# Template: https://github.com/camp-registry/camp-index/blob/main/templates/camp-release.yml
+name: Publish release to camp
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  camp:
+    uses: camp-registry/camp-workflows/.github/workflows/release.yml@v1
